@@ -203,6 +203,26 @@ débutant), « sans machine », « sans matériel ». Séries et repos sont cons
   maintenant (la séance est datée d'aujourd'hui, `original_date` = D).
 - Ordre dans une journée : faite, en cours, planifiée, prévue, sautée.
 
+## Déroulé d'une séance (`session-flow.ts`)
+
+- Au démarrage, la séance copie le plan de la séance type (exercices, ordre,
+  objectifs, repos, supersets). Les changements faits pendant la séance ne
+  touchent pas le programme, sauf « Aussi le programme » lors d'un changement
+  d'exercice.
+- **Superset** : des exercices enchaînés forment un groupe (A1, A2…). Après une
+  série d'un exercice qui n'est pas le dernier du groupe : on enchaîne, sans
+  repos. Après le dernier : le plus long des repos prévus dans le groupe, puis
+  retour au premier exercice.
+- **Changer un exercice** : les séries déjà validées restent sur l'exercice
+  d'origine ; les séries restantes (au moins une) passent au nouvel exercice,
+  placé juste après. Objectif conservé, sauf passage répétitions ↔ secondes
+  (nouvel objectif selon l'objectif et le niveau).
+- Déplacer un exercice (dont « faire plus tard ») le sort de son superset.
+- **Valeurs proposées** pour une série : celles de la dernière série validée de
+  l'exercice dans la séance, sinon l'objectif du jour. Valider avec des champs
+  vides enregistre ces valeurs.
+- Note d'exercice : la plus récente d'une autre séance est rappelée.
+
 ## Séances composées à la main
 
 - Un exercice ajouté reçoit la prescription de l'objectif et du niveau (voir

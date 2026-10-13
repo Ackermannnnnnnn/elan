@@ -1,4 +1,14 @@
-import { ArrowDown, ArrowLeft, ArrowUp, Minus, Play, Plus, Repeat } from "lucide-react";
+import {
+  ArrowDown,
+  ArrowLeft,
+  ArrowUp,
+  Link2,
+  Minus,
+  Play,
+  Plus,
+  Repeat,
+  Unlink,
+} from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -16,6 +26,7 @@ import {
   moveWorkoutExerciseAction,
   removeWorkoutExerciseAction,
   setTargetSetsAction,
+  setWorkoutSupersetAction,
   setWorkoutWeekdayAction,
   startSessionAction,
   updatePrescriptionAction,
@@ -26,6 +37,7 @@ import { MovementDemo } from "@/features/training/movement-demo";
 import { PrescriptionForm } from "@/features/training/prescription-form";
 import { addExercisesUrl, exerciseUrl, replaceUrl, sessionUrl } from "@/features/training/urls";
 import { WorkoutForm } from "@/features/training/workout-form";
+import { supersetLabels } from "@/domain/session-flow";
 
 const WEEKDAYS = [1, 2, 3, 4, 5, 6, 7] as const;
 type Weekday = (typeof WEEKDAYS)[number];
@@ -51,6 +63,9 @@ export default async function WorkoutPage({ params }: PageProps<"/training/worko
     getTranslations("Common"),
   ]);
   const count = workout.exercises.length;
+  const labels = supersetLabels(
+    workout.exercises.map((item) => ({ supersetWithNext: item.superset_with_next })),
+  );
 
   return (
     <>
@@ -137,6 +152,11 @@ export default async function WorkoutPage({ params }: PageProps<"/training/worko
                 <Card>
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div className="min-w-0 flex-1">
+                      {labels[index] ? (
+                        <Badge variant="primary" className="mb-1">
+                          {t("session.supersetBadge", { label: labels[index] ?? "" })}
+                        </Badge>
+                      ) : null}
                       <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
                         {t("exerciseNumber", { number: index + 1 })} ·{" "}
                         {t(`muscle.${exercise.primary_muscle}`)}
@@ -237,6 +257,26 @@ export default async function WorkoutPage({ params }: PageProps<"/training/worko
                     >
                       <Plus aria-hidden="true" />
                     </ActionButton>
+                    {index < count - 1 ? (
+                      <ActionButton
+                        action={setWorkoutSupersetAction.bind(
+                          null,
+                          item.id,
+                          !item.superset_with_next,
+                        )}
+                        pendingLabel="…"
+                        size="sm"
+                        variant="ghost"
+                        formClassName="ml-auto"
+                      >
+                        {item.superset_with_next ? (
+                          <Unlink aria-hidden="true" />
+                        ) : (
+                          <Link2 aria-hidden="true" />
+                        )}
+                        {item.superset_with_next ? t("session.unlink") : t("session.linkShort")}
+                      </ActionButton>
+                    ) : null}
                   </div>
 
                   <details className="mt-2">

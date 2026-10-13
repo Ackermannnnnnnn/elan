@@ -7,6 +7,7 @@ import { z } from "zod";
 import { ROUTES } from "@/config/routes";
 import { getToday } from "@/data/profile";
 import {
+  addSessionExercise,
   addSet,
   addWorkoutExercise,
   cancelPlanned,
@@ -20,18 +21,25 @@ import {
   getPlannedSession,
   logSet,
   moveOccurrence,
+  moveSessionExercise,
   moveWorkoutExercise,
   pauseSession,
   planWorkout,
   removeLastSet,
+  removeSessionExercise,
   removeWorkoutExercise,
   replaceWorkoutExercise,
   reschedulePlanned,
   resumeSession,
+  setSessionNote,
+  setSessionSuperset,
   setTargetSets,
+  setWorkoutSuperset,
   setWorkoutWeekday,
   skipOccurrence,
+  startFreeSession,
   startSession,
+  swapSessionExercise,
   updateOwnExercise,
   updatePrescription,
   updateWorkout,
@@ -45,6 +53,8 @@ import {
   dateSchema,
   finishSchema,
   type FinishFormValues,
+  type NoteFormValues,
+  noteSchema,
   type OwnExerciseFormValues,
   ownExerciseSchema,
   type PrescriptionFormValues,
@@ -463,4 +473,115 @@ export async function deleteOwnExerciseAction(id: string): Promise<ActionResult<
   });
   if (!result.ok) return result;
   redirect(libraryUrl);
+}
+
+// --- Séance en cours : imprévus ------------------------------------------------------------
+
+/** Séance libre : on ajoute les exercices au fil de l'eau. */
+export async function startFreeSessionAction(): Promise<ActionResult<string>> {
+  const t = await getTranslations("Training.session");
+  let sessionId = "";
+  const result = await runAction(z.object({}), {}, async () => {
+    sessionId = await startFreeSession(t("freeName"), await getToday());
+    refresh();
+  });
+  if (!result.ok) return result;
+  redirect(sessionUrl(sessionId));
+}
+
+export async function addSessionExerciseAction(
+  sessionId: string,
+  exerciseId: string,
+): Promise<ActionResult<string>> {
+  return runAction(
+    z.object({ sessionId: uuid, exerciseId: uuid }),
+    { sessionId, exerciseId },
+    async (ids) => {
+      await addSessionExercise(ids.sessionId, ids.exerciseId);
+      refresh();
+    },
+  );
+}
+
+/** Change un exercice de la séance en cours, puis revient à la séance. */
+export async function swapSessionExerciseAction(
+  itemId: string,
+  exerciseId: string,
+  inProgram: boolean,
+): Promise<ActionResult<string>> {
+  let sessionId = "";
+  const result = await runAction(
+    z.object({ itemId: uuid, exerciseId: uuid, inProgram: z.boolean() }),
+    { itemId, exerciseId, inProgram },
+    async (values) => {
+      sessionId = await swapSessionExercise(values);
+      refresh();
+    },
+  );
+  if (!result.ok) return result;
+  redirect(sessionUrl(sessionId));
+}
+
+export async function removeSessionExerciseAction(itemId: string): Promise<ActionResult<string>> {
+  return runAction(uuid, itemId, async (id) => {
+    await removeSessionExercise(id);
+    refresh();
+  });
+}
+
+export async function moveSessionExerciseAction(
+  itemId: string,
+  direction: -1 | 1 | "last",
+): Promise<ActionResult<string>> {
+  return runAction(
+    z.object({
+      itemId: uuid,
+      direction: z.union([z.literal(-1), z.literal(1), z.literal("last")]),
+    }),
+    { itemId, direction },
+    async (values) => {
+      await moveSessionExercise(values.itemId, values.direction);
+      refresh();
+    },
+  );
+}
+
+export async function setSessionSupersetAction(
+  itemId: string,
+  linked: boolean,
+): Promise<ActionResult<string>> {
+  return runAction(
+    z.object({ itemId: uuid, linked: z.boolean() }),
+    { itemId, linked },
+    async (values) => {
+      await setSessionSuperset(values.itemId, values.linked);
+      refresh();
+    },
+  );
+}
+
+export async function setSessionNoteAction(
+  itemId: string,
+  input: NoteFormValues,
+): Promise<ActionResult<string>> {
+  if (!uuid.safeParse(itemId).success) return { ok: false, formError: "itemNotFound" };
+  return runAction(noteSchema, input, async (values) => {
+    await setSessionNote(itemId, values.note);
+    refresh();
+  });
+}
+
+/** Superset dans la séance type. */
+export async function setWorkoutSupersetAction(
+  itemId: string,
+  linked: boolean,
+): Promise<ActionResult<string>> {
+  return runAction(
+    z.object({ itemId: uuid, linked: z.boolean() }),
+    { itemId, linked },
+    async (values) => {
+      await setWorkoutSuperset(values.itemId, values.linked);
+      refresh();
+    },
+  );
 }

@@ -993,6 +993,54 @@ export type Database = {
         };
         Relationships: [];
       };
+      session_exercises: {
+        Row: {
+          id: string;
+          user_id: string;
+          session_id: string;
+          exercise_id: string;
+          position: number;
+          rep_min: number;
+          rep_max: number;
+          rest_seconds: number | null;
+          superset_with_next: boolean;
+          replaced_exercise_id: string | null;
+          note: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id?: string;
+          session_id: string;
+          exercise_id: string;
+          position?: number;
+          rep_min: number;
+          rep_max: number;
+          rest_seconds?: number | null;
+          superset_with_next?: boolean;
+          replaced_exercise_id?: string | null;
+          note?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          session_id?: string;
+          exercise_id?: string;
+          position?: number;
+          rep_min?: number;
+          rep_max?: number;
+          rest_seconds?: number | null;
+          superset_with_next?: boolean;
+          replaced_exercise_id?: string | null;
+          note?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       shopping_list_items: {
         Row: {
           id: string;
@@ -1410,6 +1458,7 @@ export type Database = {
           replaced_exercise_id: string | null;
           created_at: string;
           updated_at: string;
+          superset_with_next: boolean;
         };
         Insert: {
           id?: string;
@@ -1425,6 +1474,7 @@ export type Database = {
           replaced_exercise_id?: string | null;
           created_at?: string;
           updated_at?: string;
+          superset_with_next?: boolean;
         };
         Update: {
           id?: string;
@@ -1440,6 +1490,7 @@ export type Database = {
           replaced_exercise_id?: string | null;
           created_at?: string;
           updated_at?: string;
+          superset_with_next?: boolean;
         };
         Relationships: [];
       };

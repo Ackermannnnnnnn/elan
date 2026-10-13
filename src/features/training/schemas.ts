@@ -89,3 +89,12 @@ export const ownExerciseSchema = z.object({
     .transform((value) => (value === "" ? null : value)),
 });
 export type OwnExerciseFormValues = z.input<typeof ownExerciseSchema>;
+
+export const noteSchema = z.object({
+  note: z
+    .string()
+    .trim()
+    .max(500, "textTooLong")
+    .transform((value) => (value === "" ? null : value)),
+});
+export type NoteFormValues = z.input<typeof noteSchema>;

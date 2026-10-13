@@ -21,7 +21,11 @@ import { ROUTES } from "@/config/routes";
 import { getToday } from "@/data/profile";
 import { getActiveSession, getWeekSchedule } from "@/data/training";
 import { resolveWeekStart, type WeekEntry } from "@/domain/training-schedule";
-import { cancelPlannedAction, startSessionAction } from "@/features/training/actions";
+import {
+  cancelPlannedAction,
+  startFreeSessionAction,
+  startSessionAction,
+} from "@/features/training/actions";
 import {
   libraryUrl,
   newWorkoutUrl,
@@ -425,6 +429,19 @@ export default async function TrainingPage({ searchParams }: PageProps<"/trainin
             </Link>
           </Button>
         </div>
+        {active ? null : (
+          <div className="mt-4 border-t border-border pt-4">
+            <p className="mb-2 text-sm text-muted-foreground">{t("manage.freeLead")}</p>
+            <ActionButton
+              action={startFreeSessionAction}
+              pendingLabel={t("starting")}
+              variant="secondary"
+            >
+              <Play aria-hidden="true" />
+              {t("manage.free")}
+            </ActionButton>
+          </div>
+        )}
       </Card>
 
       <Card className="mt-5 bg-surface-muted">

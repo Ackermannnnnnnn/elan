@@ -32,3 +32,17 @@ export const libraryUrl = `${ROUTES.training}/exercises`;
 export const newExerciseUrl = (workoutId?: string) =>
   `${libraryUrl}/new${workoutId ? `?seance=${workoutId}` : ""}`;
 export const editExerciseUrl = (id: string) => `${libraryUrl}/${id}/edit`;
+/** Changer un exercice de la séance en cours. */
+export const swapUrl = (
+  sessionId: string,
+  itemId: string,
+  options: { noMachine?: boolean; bodyweight?: boolean; library?: boolean } = {},
+) => {
+  const search = new URLSearchParams();
+  if (options.noMachine) search.set("noMachine", "1");
+  if (options.bodyweight) search.set("bodyweight", "1");
+  if (options.library) search.set("bibliotheque", "1");
+  const query = search.toString();
+  return `${sessionUrl(sessionId)}/swap/${itemId}${query ? `?${query}` : ""}`;
+};
+export const addToSessionUrl = (sessionId: string) => `${sessionUrl(sessionId)}/add`;

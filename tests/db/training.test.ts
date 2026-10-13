@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import type { PGlite } from "@electric-sql/pglite";
 import { beforeAll, describe, expect, it } from "vitest";
 import { EXERCISE_CATALOG } from "@/domain/exercise-catalog";
@@ -213,5 +215,107 @@ describe("planning souple", () => {
         tx.query("delete from exercise_library where id = $1", [exerciseId]),
       ),
     ).rejects.toThrow(/foreign key/);
+  });
+});
+
+describe("plan propre à chaque séance", () => {
+  let dana: string;
+  beforeAll(async () => {
+    dana = await createUser(db, "dana@example.test");
+  });
+
+  it("reprend l'ordre et les objectifs de la séance type pour les séances existantes", async () => {
+    const { sessionId, squat, curl } = await asUser(
+      db,
+      dana,
+      async (tx) => {
+        const ids = await tx.query<{ id: string; slug: string }>(
+          "select id, slug from exercise_library where slug in ('squat-barre', 'curl-halteres', 'gainage-planche')",
+        );
+        const id = (slug: string) => ids.rows.find((row) => row.slug === slug)?.id as string;
+        const program = await tx.query<{ id: string }>(
+          "insert into training_programs (name, structure, goal, sessions_per_week) values ('P', 'full_body', 'strength', 3) returning id",
+        );
+        const workout = await tx.query<{ id: string }>(
+          "insert into workouts (program_id, name, weekday) values ($1, 'A', 1) returning id",
+          [program.rows[0]?.id],
+        );
+        const workoutId = workout.rows[0]?.id;
+        await tx.query(
+          "insert into workout_exercises (workout_id, exercise_id, position, target_sets, rep_min, rep_max, rest_seconds) values ($1, $2, 0, 4, 3, 5, 180), ($1, $3, 1, 3, 10, 15, 60)",
+          [workoutId, id("squat-barre"), id("curl-halteres")],
+        );
+        const session = await tx.query<{ id: string }>(
+          "insert into workout_sessions (workout_id, name, scheduled_on, status) values ($1, 'A', '2026-10-12', 'completed') returning id",
+          [workoutId],
+        );
+        const sessionId = session.rows[0]?.id as string;
+        // Séries saisies avant la migration : le gainage a été ajouté hors programme.
+        await tx.query(
+          "insert into workout_sets (session_id, exercise_id, set_number) values ($1, $2, 1), ($1, $3, 1), ($1, $4, 1)",
+          [sessionId, id("gainage-planche"), id("curl-halteres"), id("squat-barre")],
+        );
+        return { sessionId, squat: id("squat-barre"), curl: id("curl-halteres") };
+      },
+      { commit: true },
+    );
+    // On rejoue la reprise de la migration, telle qu'écrite dans le fichier.
+    const migration = readFileSync(
+      join(import.meta.dirname, "../../supabase/migrations/20261013200000_session_plan.sql"),
+      "utf8",
+    );
+    const backfill = migration.slice(migration.indexOf("insert into public.session_exercises"));
+    await db.exec(backfill);
+    const { rows } = await db.query<{
+      exercise_id: string;
+      position: number;
+      rep_min: number;
+      rep_max: number;
+      rest_seconds: number | null;
+    }>(
+      "select exercise_id, position, rep_min, rep_max, rest_seconds from session_exercises where session_id = $1 order by position",
+      [sessionId],
+    );
+    expect(rows.map((row) => row.position)).toEqual([0, 1, 2]);
+    expect(rows[0]).toMatchObject({
+      exercise_id: squat,
+      rep_min: 3,
+      rep_max: 5,
+      rest_seconds: 180,
+    });
+    expect(rows[1]).toMatchObject({
+      exercise_id: curl,
+      rep_min: 10,
+      rep_max: 15,
+      rest_seconds: 60,
+    });
+    // Exercice hors programme : en dernier, avec un objectif par défaut.
+    expect(rows[2]).toMatchObject({ rep_min: 8, rep_max: 12, rest_seconds: null });
+  });
+
+  it("un exercice n'apparaît qu'une fois par séance, et le plan est privé", async () => {
+    const sessionId = (
+      await db.query<{ id: string }>("select id from workout_sessions where user_id = $1 limit 1", [
+        dana,
+      ])
+    ).rows[0]?.id;
+    await expect(
+      asUser(db, dana, async (tx) => {
+        const row = await tx.query<{ exercise_id: string }>(
+          "select exercise_id from session_exercises where session_id = $1 limit 1",
+          [sessionId],
+        );
+        await tx.query(
+          "insert into session_exercises (session_id, exercise_id, rep_min, rep_max) values ($1, $2, 8, 12)",
+          [sessionId, row.rows[0]?.exercise_id],
+        );
+      }),
+    ).rejects.toThrow(/session_exercises_session_id_exercise_id_key/);
+    const seenByBob = await asUser(
+      db,
+      bob,
+      async (tx) => (await tx.query("select id from session_exercises")).rows.length,
+    );
+    expect(seenByBob).toBe(0);
   });
 });

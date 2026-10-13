@@ -59,9 +59,15 @@ Ce qui fonctionne aujourd'hui :
   se saute pour une seule date, se rattrape un autre jour, change de jour
   habituel ou devient « à la demande » ; on peut ajouter une séance à
   n'importe quel jour.
-- **Séance en direct** : charges et répétitions par série, minuteur de repos,
-  pause, fin de séance avec ressenti, objectif proposé d'une séance à l'autre
-  (double progression), historique et courbe de force estimée par exercice.
+- **Séance en direct** : charges et répétitions par série (validation en un
+  geste avec les valeurs proposées), grand minuteur de repos en bas de l'écran
+  (±15 s, passer, bips et vibration, écran maintenu allumé), pause, fin de
+  séance avec ressenti, objectif proposé d'une séance à l'autre (double
+  progression), historique et courbe de force estimée par exercice.
+- **Imprévus en séance** : changer un exercice (machine prise) pour la séance
+  ou aussi dans le programme, faire un exercice plus tard, réordonner, ajouter
+  ou passer un exercice, supersets (dans la séance type ou en direct), notes
+  rappelées la fois suivante, chrono pour les exercices tenus, séance libre.
 
 **Pas d'IA, pas de frais.** La photo de repas et les coachs IA demandent un
 service payant : ils ne sont pas activés et l'application l'indique clairement.

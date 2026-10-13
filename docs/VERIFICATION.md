@@ -8,7 +8,7 @@ Dernière mise à jour : 13 octobre 2026, phase 5 complétée (séances sur mesu
 | --------------------------------------- | --------------------------------------- |
 | TypeScript strict (`npm run typecheck`) | Aucune erreur                           |
 | ESLint (`npm run lint`)                 | Aucune erreur, aucun avertissement      |
-| Tests (`npm test`)                      | 293 tests réussis                       |
+| Tests (`npm test`)                      | 301 tests réussis                       |
 | Build de production (`npm run build`)   | Réussi, avec et sans variables Supabase |
 
 Ce que couvrent les tests :
@@ -97,6 +97,21 @@ API REST) adossée à un vrai PostgreSQL où les migrations du projet sont
 appliquées : la RLS, les déclencheurs et les contraintes sont donc réels. La
 doublure n'est pas livrée avec le projet. La phase 2 a par ailleurs été
 validée sur un vrai projet Supabase (inscription, e-mail, profil, déconnexion).
+
+## Séance à la salle et imprévus (12 parcours × 3)
+
+Contre la pile Supabase locale, en production (ordinateur et mobile) et avec
+`npm run dev`, sans erreur ni débordement horizontal sur mobile : superset dans
+la séance type puis copié dans la séance, minuteur (position en bas d'écran,
++15 s, reprise après rechargement, passer), validation en un geste, machine
+prise (séries faites conservées, série restante sur le nouvel exercice,
+programme intact), enchaînement puis repos du superset, note rappelée à la
+séance suivante, « faire plus tard » (superset rompu), exercice passé, exercice
+tenu ajouté en pleine séance avec chrono, changement « aussi le programme »
+depuis la bibliothèque, séance abandonnée puis séance libre.
+
+Défauts trouvés et corrigés : un libellé trop long et le sélecteur « cette
+séance / programme » faisaient déborder l'écran du téléphone.
 
 ## Séances sur mesure et planning souple (13 parcours × 3)
 

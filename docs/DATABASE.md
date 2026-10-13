@@ -38,6 +38,7 @@ protégées par la Row Level Security.
 | `…140100_ciqual_2025`                  | Catalogue partagé : 3 285 aliments CIQUAL (fichier généré, voir le README)                                                                                                  |
 | `…160000_training_programs`            | Exercices chronométrés, niveau et durée des programmes, thème des séances, une seule séance en cours par utilisateur, objectif d'entraînement                               |
 | `…160100_exercise_library`             | Bibliothèque partagée : 68 exercices (fichier généré depuis `src/domain/exercise-catalog.ts`)                                                                               |
+| `…200000_session_plan` (13/10)         | Plan propre à chaque séance (`session_exercises` : ordre, objectifs, superset, exercice remplacé, note) repris des séances existantes ; supersets des séances types         |
 | `…090000_flexible_schedule` (13/10)    | Planning souple : `workout_sessions.original_date` (occurrence déplacée, sautée ou faite un autre jour), une seule modification par occurrence, séance sautée à sa date     |
 
 ## Tables par domaine

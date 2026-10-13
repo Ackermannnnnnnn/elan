@@ -10,7 +10,7 @@ import { useFormMessages } from "@/components/forms/use-form-messages";
 import { Alert } from "@/components/ui/alert";
 import type { ActionResult } from "@/lib/action-result";
 import { discardSessionAction } from "./actions";
-import { type FinishFormValues, finishSchema } from "./schemas";
+import { type FinishFormValues, finishSchema, type NoteFormValues, noteSchema } from "./schemas";
 
 /** Fin de séance : ressenti facultatif (1 à 10), séries non validées retirées. */
 export function FinishForm({
@@ -61,5 +61,62 @@ export function DiscardSessionButton({ id }: { id: string }) {
       pendingLabel={tCommon("deleting")}
       action={() => discardSessionAction(id)}
     />
+  );
+}
+
+/** Note libre sur un exercice de la séance (réglage de machine, sensation…). */
+export function NoteForm({
+  action,
+  defaultNote,
+  idPrefix,
+}: {
+  action: (values: NoteFormValues) => Promise<ActionResult<string>>;
+  defaultNote: string;
+  idPrefix: string;
+}) {
+  const t = useTranslations("Training.session");
+  const tCommon = useTranslations("Common");
+  const messages = useFormMessages();
+  const { form, onSubmit, pending, formError, succeeded } = useActionForm({
+    schema: noteSchema,
+    defaultValues: { note: defaultNote },
+    action,
+  });
+  const id = `${idPrefix}-note`;
+  const error = messages.validation(form.formState.errors.note?.message);
+  return (
+    <FormProvider {...form}>
+      <form onSubmit={onSubmit} noValidate className="flex flex-col gap-2">
+        <label htmlFor={id} className="text-sm font-semibold">
+          {t("note")}
+        </label>
+        <textarea
+          id={id}
+          rows={2}
+          maxLength={500}
+          placeholder={t("notePlaceholder")}
+          aria-invalid={Boolean(error)}
+          className="rounded-control border border-border-strong bg-surface px-3 py-2 text-base focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+          {...form.register("note")}
+        />
+        {error ? <p className="text-xs font-medium text-destructive">{error}</p> : null}
+        {formError ? <Alert variant="error">{messages.error(formError)}</Alert> : null}
+        <div className="flex items-center gap-3">
+          <SubmitButton
+            pending={pending}
+            pendingLabel={tCommon("saving")}
+            variant="secondary"
+            size="sm"
+          >
+            {t("saveNote")}
+          </SubmitButton>
+          {succeeded ? (
+            <p role="status" className="text-sm text-muted-foreground">
+              {tCommon("saved")}
+            </p>
+          ) : null}
+        </div>
+      </form>
+    </FormProvider>
   );
 }

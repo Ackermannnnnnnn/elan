@@ -245,6 +245,7 @@ export type WorkoutExercise = Pick<
   | "rep_max"
   | "rest_seconds"
   | "replaced_exercise_id"
+  | "superset_with_next"
 >;
 
 const PROGRAM_COLUMNS =
@@ -252,7 +253,7 @@ const PROGRAM_COLUMNS =
 const WORKOUT_COLUMNS =
   "id, program_id, name, weekday, position, estimated_minutes, focus" as const;
 const WORKOUT_EXERCISE_COLUMNS =
-  "id, workout_id, exercise_id, position, target_sets, rep_min, rep_max, rest_seconds, replaced_exercise_id" as const;
+  "id, workout_id, exercise_id, position, target_sets, rep_min, rep_max, rest_seconds, replaced_exercise_id, superset_with_next" as const;
 
 /**
  * Enregistre les réglages puis génère et active un nouveau programme (l'ancien
@@ -629,6 +630,18 @@ export async function moveWorkoutExercise(itemId: string, direction: -1 | 1): Pr
 }
 
 /** Séries, répétitions (ou secondes) et repos d'un exercice de séance. */
+/** Enchaîne (superset) ou sépare un exercice de la séance type et le suivant. */
+export async function setWorkoutSuperset(itemId: string, linked: boolean): Promise<void> {
+  const { supabase, user } = await getDb();
+  const item = await getWorkoutExercise(itemId);
+  const { error } = await supabase
+    .from("workout_exercises")
+    .update({ superset_with_next: linked })
+    .eq("id", item.id)
+    .eq("user_id", user.id);
+  if (error) fail("setWorkoutSuperset", error, "saveFailed");
+}
+
 export async function updatePrescription(
   itemId: string,
   input: { sets: number; repMin: number; repMax: number; restSeconds: number },
@@ -904,29 +917,95 @@ export async function startSession(
     sessionId = data.id;
   }
 
-  const { error: setsError } = await supabase.from("workout_sets").insert(
-    workout.exercises.flatMap((item) =>
-      Array.from({ length: item.target_sets }, (_, index) => ({
-        user_id: user.id,
-        session_id: sessionId,
-        exercise_id: item.exercise_id,
-        set_number: index + 1,
+  try {
+    await createSessionPlan(
+      sessionId,
+      workout.exercises.map((item) => ({
+        exerciseId: item.exercise_id,
+        sets: item.target_sets,
+        repMin: item.rep_min,
+        repMax: item.rep_max,
+        restSeconds: item.rest_seconds,
+        supersetWithNext: item.superset_with_next,
       })),
-    ),
-  );
-  if (setsError) {
+    );
+  } catch (error) {
     if (from.plannedId) {
       await supabase
         .from("workout_sessions")
         .update({ status: "planned", started_at: null })
         .eq("id", sessionId)
         .eq("user_id", user.id);
+      await supabase.from("session_exercises").delete().eq("session_id", sessionId);
+      await supabase.from("workout_sets").delete().eq("session_id", sessionId);
     } else {
       await supabase.from("workout_sessions").delete().eq("id", sessionId).eq("user_id", user.id);
     }
-    fail("startSession.sets", setsError, "saveFailed");
+    throw error;
   }
   return sessionId;
+}
+
+/** Séance libre : aucun exercice prévu, on les ajoute au fil de la séance. */
+export async function startFreeSession(name: string, today: IsoDate): Promise<string> {
+  const active = await getActiveSession();
+  if (active) return active.id;
+  const { supabase, user } = await getDb();
+  const { data, error } = await supabase
+    .from("workout_sessions")
+    .insert({
+      user_id: user.id,
+      name: name.slice(0, 120),
+      scheduled_on: today,
+      status: "in_progress",
+      started_at: new Date().toISOString(),
+    })
+    .select("id")
+    .single();
+  if (error) fail("startFreeSession", error, "saveFailed");
+  return data.id;
+}
+
+type PlanItem = {
+  exerciseId: string;
+  sets: number;
+  repMin: number;
+  repMax: number;
+  restSeconds: number | null;
+  supersetWithNext: boolean;
+};
+
+/** Copie le plan d'une séance (exercices, objectifs) et crée ses séries vides. */
+async function createSessionPlan(sessionId: string, items: readonly PlanItem[], startAt = 0) {
+  if (items.length === 0) return;
+  const { supabase, user } = await getDb();
+  const { error } = await supabase.from("session_exercises").insert(
+    items.map((item, index) => ({
+      user_id: user.id,
+      session_id: sessionId,
+      exercise_id: item.exerciseId,
+      position: startAt + index,
+      rep_min: item.repMin,
+      rep_max: item.repMax,
+      rest_seconds: item.restSeconds,
+      superset_with_next: item.supersetWithNext,
+    })),
+  );
+  if (error) {
+    if (isUniqueViolation(error)) throw new DataError("exerciseAlreadyInSession");
+    fail("createSessionPlan", error, "saveFailed");
+  }
+  const { error: setsError } = await supabase.from("workout_sets").insert(
+    items.flatMap((item) =>
+      Array.from({ length: Math.max(1, item.sets) }, (_, index) => ({
+        user_id: user.id,
+        session_id: sessionId,
+        exercise_id: item.exerciseId,
+        set_number: index + 1,
+      })),
+    ),
+  );
+  if (setsError) fail("createSessionPlan.sets", setsError, "saveFailed");
 }
 
 // --- Planning ------------------------------------------------------------------------
@@ -1109,14 +1188,34 @@ export async function cancelPlanned(id: string): Promise<void> {
   if (data.length === 0) throw new DataError("itemNotFound");
 }
 
+export type SessionItem = Pick<
+  Row<"session_exercises">,
+  | "id"
+  | "exercise_id"
+  | "position"
+  | "rep_min"
+  | "rep_max"
+  | "rest_seconds"
+  | "superset_with_next"
+  | "replaced_exercise_id"
+  | "note"
+>;
+const SESSION_ITEM_COLUMNS =
+  "id, exercise_id, position, rep_min, rep_max, rest_seconds, superset_with_next, replaced_exercise_id, note" as const;
+
 export type SessionView = {
   session: Session;
   exercises: {
+    item: SessionItem;
     exercise: Exercise;
-    target: Pick<WorkoutExercise, "rep_min" | "rep_max" | "rest_seconds"> | null;
+    /** Exercice prévu à l'origine (changé pendant la séance). */
+    replaced: Exercise | null;
+    target: Pick<SessionItem, "rep_min" | "rep_max" | "rest_seconds">;
     sets: SessionSet[];
     previous: LoggedSet[];
     suggestion: Suggestion | null;
+    /** Note laissée sur cet exercice lors d'une séance précédente. */
+    lastNote: string | null;
   }[];
 };
 
@@ -1131,65 +1230,476 @@ export async function getSession(id: string): Promise<SessionView | null> {
   if (error) fail("getSession", error);
   if (!session) return null;
 
-  const { data: sets, error: setsError } = await supabase
-    .from("workout_sets")
-    .select(SET_COLUMNS)
-    .eq("user_id", user.id)
-    .eq("session_id", id)
-    .order("set_number", { ascending: true });
-  if (setsError) fail("getSession.sets", setsError);
-
-  const targets = new Map<string, Pick<WorkoutExercise, "rep_min" | "rep_max" | "rest_seconds">>();
-  const order: string[] = [];
-  if (session.workout_id) {
-    const { data: items, error: itemsError } = await supabase
-      .from("workout_exercises")
-      .select("exercise_id, rep_min, rep_max, rest_seconds, position")
+  const [setsResult, itemsResult] = await Promise.all([
+    supabase
+      .from("workout_sets")
+      .select(SET_COLUMNS)
       .eq("user_id", user.id)
-      .eq("workout_id", session.workout_id)
-      .order("position", { ascending: true });
-    if (itemsError) fail("getSession.targets", itemsError);
-    for (const item of items) {
-      targets.set(item.exercise_id, item);
-      order.push(item.exercise_id);
-    }
-  }
-  for (const set of sets) if (!order.includes(set.exercise_id)) order.push(set.exercise_id);
-  const present = order.filter((exerciseId) => sets.some((set) => set.exercise_id === exerciseId));
+      .eq("session_id", id)
+      .order("set_number", { ascending: true }),
+    supabase
+      .from("session_exercises")
+      .select(SESSION_ITEM_COLUMNS)
+      .eq("user_id", user.id)
+      .eq("session_id", id)
+      .order("position", { ascending: true })
+      .order("created_at", { ascending: true }),
+  ]);
+  if (setsResult.error) fail("getSession.sets", setsResult.error);
+  if (itemsResult.error) fail("getSession.items", itemsResult.error);
+  const sets = setsResult.data;
+  // Une séance terminée ne montre que les exercices réellement faits.
+  const items = itemsResult.data.filter(
+    (item) =>
+      session.status !== "completed" || sets.some((set) => set.exercise_id === item.exercise_id),
+  );
+  const exerciseIds = items.map((item) => item.exercise_id);
 
-  const library = new Map((await listExercises()).map((exercise) => [exercise.id, exercise]));
-  // Dernière performance AVANT cette séance (on exclut la séance elle-même).
-  const history = await lastPerformance(present, id);
+  const [library, history, notes] = await Promise.all([
+    listExercises().then((all) => new Map(all.map((exercise) => [exercise.id, exercise]))),
+    // Dernière performance AVANT cette séance (on exclut la séance elle-même).
+    lastPerformance(exerciseIds, id),
+    lastNotes(exerciseIds, id),
+  ]);
 
   return {
     session,
-    exercises: present.flatMap((exerciseId) => {
-      const exercise = library.get(exerciseId);
+    exercises: items.flatMap((item) => {
+      const exercise = library.get(item.exercise_id);
       if (!exercise) return [];
-      const target = targets.get(exerciseId) ?? null;
-      const previous = history.get(exerciseId) ?? [];
+      const previous = history.get(item.exercise_id) ?? [];
       const lowerBodyCompound =
         exercise.is_compound &&
         ["quadriceps", "hamstrings", "glutes"].includes(exercise.primary_muscle);
       return [
         {
+          item,
           exercise,
-          target,
-          sets: sets.filter((set) => set.exercise_id === exerciseId),
-          previous,
-          suggestion: target
-            ? suggestNext({
-                previous,
-                repMin: target.rep_min,
-                repMax: target.rep_max,
-                timed: exercise.is_timed,
-                lowerBodyCompound,
-              })
+          replaced: item.replaced_exercise_id
+            ? (library.get(item.replaced_exercise_id) ?? null)
             : null,
+          target: item,
+          sets: sets.filter((set) => set.exercise_id === item.exercise_id),
+          previous,
+          suggestion: suggestNext({
+            previous,
+            repMin: item.rep_min,
+            repMax: item.rep_max,
+            timed: exercise.is_timed,
+            lowerBodyCompound,
+          }),
+          lastNote: notes.get(item.exercise_id) ?? null,
         },
       ];
     }),
   };
+}
+
+/** Dernière note laissée sur chaque exercice lors d'une autre séance. */
+async function lastNotes(exerciseIds: readonly string[], sessionId: string) {
+  const result = new Map<string, string>();
+  if (exerciseIds.length === 0) return result;
+  const { supabase, user } = await getDb();
+  const { data, error } = await supabase
+    .from("session_exercises")
+    .select("exercise_id, note, updated_at")
+    .eq("user_id", user.id)
+    .in("exercise_id", [...exerciseIds])
+    .neq("session_id", sessionId)
+    .not("note", "is", null)
+    .order("updated_at", { ascending: false })
+    .limit(200);
+  if (error) fail("lastNotes", error);
+  for (const row of data) {
+    if (row.note && !result.has(row.exercise_id)) result.set(row.exercise_id, row.note);
+  }
+  return result;
+}
+
+// --- Modifier la séance en cours -------------------------------------------------------
+
+/** Séance en cours ou en pause (sinon : introuvable). */
+async function getOpenSession(id: string): Promise<Session> {
+  const session = await getOwnSession(id);
+  if (session.status !== "in_progress" && session.status !== "paused") {
+    throw new DataError("sessionNotOpen");
+  }
+  return session;
+}
+
+async function listSessionItems(sessionId: string) {
+  const { supabase, user } = await getDb();
+  const { data, error } = await supabase
+    .from("session_exercises")
+    .select(SESSION_ITEM_COLUMNS)
+    .eq("user_id", user.id)
+    .eq("session_id", sessionId)
+    .order("position", { ascending: true })
+    .order("created_at", { ascending: true });
+  if (error) fail("listSessionItems", error);
+  return data;
+}
+
+/** Exercice de la séance + la séance (ouverte). */
+async function getSessionItem(itemId: string) {
+  const { supabase, user } = await getDb();
+  const { data, error } = await supabase
+    .from("session_exercises")
+    .select(`${SESSION_ITEM_COLUMNS}, session_id`)
+    .eq("id", itemId)
+    .eq("user_id", user.id)
+    .maybeSingle();
+  if (error) fail("getSessionItem", error);
+  if (!data) throw new DataError("itemNotFound");
+  const session = await getOpenSession(data.session_id);
+  return { item: data, session };
+}
+
+/** Réécrit les positions 0, 1, 2… dans l'ordre donné. */
+async function writeOrder(
+  items: readonly { id: string; position: number; superset_with_next: boolean }[],
+  flags: Map<string, boolean> = new Map(),
+) {
+  const { supabase, user } = await getDb();
+  for (const [position, item] of items.entries()) {
+    const superset = flags.get(item.id) ?? item.superset_with_next;
+    if (item.position === position && superset === item.superset_with_next) continue;
+    const { error } = await supabase
+      .from("session_exercises")
+      .update({ position, superset_with_next: superset })
+      .eq("id", item.id)
+      .eq("user_id", user.id);
+    if (error) fail("writeOrder", error, "saveFailed");
+  }
+}
+
+const MAX_SESSION_EXERCISES = 25;
+
+/** Ajoute un exercice à la séance en cours (à la fin, ou juste après `afterItemId`). */
+export async function addSessionExercise(
+  sessionId: string,
+  exerciseId: string,
+  afterItemId?: string,
+): Promise<void> {
+  await getOpenSession(sessionId);
+  const items = await listSessionItems(sessionId);
+  if (items.some((item) => item.exercise_id === exerciseId)) {
+    throw new DataError("exerciseAlreadyInSession");
+  }
+  if (items.length >= MAX_SESSION_EXERCISES) throw new DataError("tooManyExercises");
+  const [exercise, settings] = await Promise.all([getExercise(exerciseId), getTrainingSettings()]);
+  if (!exercise) throw new DataError("itemNotFound");
+  const prescription = prescriptionFor(
+    { compound: exercise.is_compound, timed: exercise.is_timed },
+    settings.goal,
+    settings.level,
+  );
+  await createSessionPlan(
+    sessionId,
+    [
+      {
+        exerciseId,
+        sets: prescription.sets,
+        repMin: prescription.repMin,
+        repMax: prescription.repMax,
+        restSeconds: prescription.restSeconds,
+        supersetWithNext: false,
+      },
+    ],
+    items.length,
+  );
+  if (afterItemId) {
+    const after = items.findIndex((item) => item.id === afterItemId);
+    if (after >= 0) {
+      const fresh = await listSessionItems(sessionId);
+      const added = fresh.find((item) => item.exercise_id === exerciseId);
+      if (added) {
+        const rest = fresh.filter((item) => item.id !== added.id);
+        rest.splice(after + 1, 0, added);
+        await writeOrder(rest);
+      }
+    }
+  }
+}
+
+/**
+ * Change un exercice de la séance en cours (machine prise, douleur…).
+ * Les séries déjà validées restent sur l'exercice d'origine ; les séries
+ * restantes passent au nouvel exercice, placé au même endroit.
+ * `inProgram` : remplacer aussi l'exercice dans la séance type.
+ */
+export async function swapSessionExercise(input: {
+  itemId: string;
+  exerciseId: string;
+  inProgram: boolean;
+}): Promise<string> {
+  const { supabase, user } = await getDb();
+  const { item, session } = await getSessionItem(input.itemId);
+  if (item.exercise_id === input.exerciseId) return session.id;
+  const items = await listSessionItems(session.id);
+  if (items.some((other) => other.exercise_id === input.exerciseId)) {
+    throw new DataError("exerciseAlreadyInSession");
+  }
+  const [current, replacement, settings] = await Promise.all([
+    getExercise(item.exercise_id),
+    getExercise(input.exerciseId),
+    getTrainingSettings(),
+  ]);
+  if (!current || !replacement) throw new DataError("itemNotFound");
+
+  const { data: sets, error: setsError } = await supabase
+    .from("workout_sets")
+    .select("id, completed_at")
+    .eq("user_id", user.id)
+    .eq("session_id", session.id)
+    .eq("exercise_id", item.exercise_id);
+  if (setsError) fail("swapSessionExercise.sets", setsError);
+  const done = sets.filter((set) => set.completed_at).length;
+  const remaining = Math.max(1, sets.length - done);
+
+  // Objectif : celui prévu, sauf si l'on passe de répétitions à secondes (ou l'inverse).
+  const prescription =
+    replacement.is_timed !== current.is_timed
+      ? prescriptionFor(
+          { compound: replacement.is_compound, timed: replacement.is_timed },
+          settings.goal,
+          settings.level,
+        )
+      : { repMin: item.rep_min, repMax: item.rep_max, restSeconds: item.rest_seconds };
+
+  const { error: deleteError } = await supabase
+    .from("workout_sets")
+    .delete()
+    .eq("user_id", user.id)
+    .eq("session_id", session.id)
+    .eq("exercise_id", item.exercise_id)
+    .is("completed_at", null);
+  if (deleteError) fail("swapSessionExercise.clear", deleteError, "saveFailed");
+
+  if (done === 0) {
+    // Rien de fait : l'exercice est remplacé sur place.
+    const { error } = await supabase
+      .from("session_exercises")
+      .update({
+        exercise_id: replacement.id,
+        replaced_exercise_id: item.replaced_exercise_id ?? item.exercise_id,
+        rep_min: prescription.repMin,
+        rep_max: prescription.repMax,
+        rest_seconds: prescription.restSeconds,
+      })
+      .eq("id", item.id)
+      .eq("user_id", user.id);
+    if (error) fail("swapSessionExercise", error, "saveFailed");
+    const { error: insertError } = await supabase.from("workout_sets").insert(
+      Array.from({ length: remaining }, (_, index) => ({
+        user_id: user.id,
+        session_id: session.id,
+        exercise_id: replacement.id,
+        set_number: index + 1,
+      })),
+    );
+    if (insertError) fail("swapSessionExercise.sets", insertError, "saveFailed");
+  } else {
+    // Des séries sont faites : elles restent, le nouvel exercice suit juste après.
+    await createSessionPlan(
+      session.id,
+      [
+        {
+          exerciseId: replacement.id,
+          sets: remaining,
+          repMin: prescription.repMin,
+          repMax: prescription.repMax,
+          restSeconds: prescription.restSeconds,
+          supersetWithNext: item.superset_with_next,
+        },
+      ],
+      items.length,
+    );
+    const fresh = await listSessionItems(session.id);
+    const added = fresh.find((other) => other.exercise_id === replacement.id);
+    if (added) {
+      const { error } = await supabase
+        .from("session_exercises")
+        .update({ replaced_exercise_id: item.exercise_id })
+        .eq("id", added.id)
+        .eq("user_id", user.id);
+      if (error) fail("swapSessionExercise.trace", error, "saveFailed");
+      const order = fresh.filter((other) => other.id !== added.id);
+      order.splice(order.findIndex((other) => other.id === item.id) + 1, 0, added);
+      await writeOrder(order, new Map([[item.id, false]]));
+    }
+  }
+
+  if (input.inProgram && session.workout_id) {
+    const { data: template, error } = await supabase
+      .from("workout_exercises")
+      .select("id, exercise_id, replaced_exercise_id")
+      .eq("user_id", user.id)
+      .eq("workout_id", session.workout_id);
+    if (error) fail("swapSessionExercise.template", error);
+    const target = template.find((row) => row.exercise_id === item.exercise_id);
+    const clash = template.some((row) => row.exercise_id === replacement.id);
+    if (target && !clash) {
+      const { error: updateError } = await supabase
+        .from("workout_exercises")
+        .update({
+          exercise_id: replacement.id,
+          replaced_exercise_id: target.replaced_exercise_id ?? target.exercise_id,
+          rep_min: prescription.repMin,
+          rep_max: prescription.repMax,
+        })
+        .eq("id", target.id)
+        .eq("user_id", user.id);
+      if (updateError) fail("swapSessionExercise.program", updateError, "saveFailed");
+    }
+  }
+  return session.id;
+}
+
+/**
+ * Retire un exercice de la séance en cours : les séries non faites disparaissent.
+ * S'il a déjà des séries validées, il reste affiché avec elles.
+ */
+export async function removeSessionExercise(itemId: string): Promise<string> {
+  const { supabase, user } = await getDb();
+  const { item, session } = await getSessionItem(itemId);
+  const { error } = await supabase
+    .from("workout_sets")
+    .delete()
+    .eq("user_id", user.id)
+    .eq("session_id", session.id)
+    .eq("exercise_id", item.exercise_id)
+    .is("completed_at", null);
+  if (error) fail("removeSessionExercise.sets", error, "deleteFailed");
+  const { count, error: countError } = await supabase
+    .from("workout_sets")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", user.id)
+    .eq("session_id", session.id)
+    .eq("exercise_id", item.exercise_id);
+  if (countError) fail("removeSessionExercise.count", countError);
+  const items = await listSessionItems(session.id);
+  const index = items.findIndex((other) => other.id === item.id);
+  const previous = items[index - 1];
+  if ((count ?? 0) === 0) {
+    const { error: deleteError } = await supabase
+      .from("session_exercises")
+      .delete()
+      .eq("id", item.id)
+      .eq("user_id", user.id);
+    if (deleteError) fail("removeSessionExercise", deleteError, "deleteFailed");
+    // Le superset qui pointait vers lui est rompu.
+    await writeOrder(
+      items.filter((other) => other.id !== item.id),
+      new Map(previous ? [[previous.id, false]] : []),
+    );
+  } else {
+    await writeOrder(
+      items,
+      new Map([[item.id, false], ...(previous ? ([[previous.id, false]] as const) : [])]),
+    );
+  }
+  return session.id;
+}
+
+/**
+ * Déplace un exercice : -1 (monter), +1 (descendre) ou "last" (faire plus
+ * tard, en fin de séance). Un exercice déplacé sort de son superset.
+ */
+export async function moveSessionExercise(
+  itemId: string,
+  direction: -1 | 1 | "last",
+): Promise<string> {
+  const { item, session } = await getSessionItem(itemId);
+  const items = await listSessionItems(session.id);
+  const from = items.findIndex((other) => other.id === item.id);
+  if (from < 0) return session.id;
+  const order = [...items];
+  const [moved] = order.splice(from, 1);
+  if (!moved) return session.id;
+  const to =
+    direction === "last" ? order.length : Math.max(0, Math.min(order.length, from + direction));
+  if (to === from) return session.id;
+  order.splice(to, 0, moved);
+  const flags = new Map<string, boolean>([[moved.id, false]]);
+  const before = items[from - 1];
+  if (before) flags.set(before.id, false);
+  const newBefore = order[to - 1];
+  if (newBefore) flags.set(newBefore.id, false);
+  await writeOrder(order, flags);
+  return session.id;
+}
+
+/** Enchaîne (ou sépare) un exercice avec le suivant, pendant la séance. */
+export async function setSessionSuperset(itemId: string, linked: boolean): Promise<string> {
+  const { supabase, user } = await getDb();
+  const { item, session } = await getSessionItem(itemId);
+  const items = await listSessionItems(session.id);
+  if (linked && items[items.length - 1]?.id === item.id) throw new DataError("nothingToLink");
+  const { error } = await supabase
+    .from("session_exercises")
+    .update({ superset_with_next: linked })
+    .eq("id", item.id)
+    .eq("user_id", user.id);
+  if (error) fail("setSessionSuperset", error, "saveFailed");
+  return session.id;
+}
+
+/** Note libre sur un exercice de la séance (vide = supprimée). */
+export async function setSessionNote(itemId: string, note: string | null): Promise<string> {
+  const { supabase, user } = await getDb();
+  const { data, error } = await supabase
+    .from("session_exercises")
+    .update({ note })
+    .eq("id", itemId)
+    .eq("user_id", user.id)
+    .select("session_id");
+  if (error) fail("setSessionNote", error, "saveFailed");
+  const row = data[0];
+  if (!row) throw new DataError("itemNotFound");
+  return row.session_id;
+}
+
+/** Alternatives proposées par le moteur pour un exercice de la séance en cours. */
+export async function listSessionAlternatives(
+  itemId: string,
+  filters: ReplacementFilters,
+): Promise<{
+  current: Exercise;
+  sessionId: string;
+  workoutId: string | null;
+  options: Exercise[];
+}> {
+  const { item, session } = await getSessionItem(itemId);
+  const [all, settings, items] = await Promise.all([
+    listExercises(),
+    getTrainingSettings(),
+    listSessionItems(session.id),
+  ]);
+  const current = all.find((exercise) => exercise.id === item.exercise_id);
+  if (!current) throw new DataError("itemNotFound");
+  const byId = new Map(all.map((exercise) => [exercise.id, exercise]));
+  const options = findReplacements({
+    current: toLibraryExercise(current),
+    library: all.filter((exercise) => exercise.owner_id === null).map(toLibraryExercise),
+    context: contextFrom(settings),
+    inWorkout: items.map((other) => other.exercise_id),
+    filters,
+  }).flatMap((exercise) => byId.get(exercise.id) ?? []);
+  return { current, sessionId: session.id, workoutId: session.workout_id, options };
+}
+
+/** Exercice de séance (pour les pages « changer » et « ajouter »). */
+export async function getSessionItemView(itemId: string) {
+  const { item, session } = await getSessionItem(itemId);
+  const exercise = await getExercise(item.exercise_id);
+  if (!exercise) throw new DataError("itemNotFound");
+  return { item, session, exercise, items: await listSessionItems(session.id) };
+}
+
+export async function getOpenSessionView(sessionId: string) {
+  const session = await getOpenSession(sessionId);
+  return { session, items: await listSessionItems(sessionId) };
 }
 
 /** Séries validées de la dernière autre séance où figurait chaque exercice. */

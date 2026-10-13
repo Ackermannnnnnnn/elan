@@ -13,7 +13,11 @@ import { type Exercise, type TrainingSettings, toLibraryExercise } from "@/data/
 import { type Equipment, MUSCLES, type Muscle } from "@/domain/exercise-catalog";
 import { filterExercises } from "@/domain/exercise-search";
 import { availableEquipment, suitsLevel } from "@/domain/training-program";
-import { addWorkoutExerciseAction } from "./actions";
+import {
+  addSessionExerciseAction,
+  addWorkoutExerciseAction,
+  swapSessionExerciseAction,
+} from "./actions";
 import { demoFor } from "./demo";
 import { MovementDemo } from "./movement-demo";
 import { exerciseUrl } from "./urls";
@@ -41,13 +45,25 @@ export async function ExerciseBrowser({
   search,
   path,
   addTo,
+  keep = {},
 }: {
   exercises: readonly Exercise[];
   settings: TrainingSettings;
   search: BrowserSearch;
   /** Adresse de la page (le formulaire de filtres y renvoie). */
   path: string;
-  addTo?: { workoutId: string; existing: readonly string[] };
+  /**
+   * Choix d'un exercice : l'ajouter à une séance type (`workout`), à la séance
+   * en cours (`session`), ou remplacer un exercice de la séance en cours (`swap`).
+   */
+  addTo?: {
+    kind: "workout" | "session" | "swap";
+    targetId: string;
+    existing: readonly string[];
+    inProgram?: boolean;
+  };
+  /** Paramètres d'URL à conserver quand on filtre. */
+  keep?: Record<string, string>;
 }) {
   const t = await getTranslations("Training");
   const tOptions = await getTranslations("Options");
@@ -73,6 +89,9 @@ export async function ExerciseBrowser({
           className="flex flex-col gap-4"
           role="search"
         >
+          {Object.entries(keep).map(([name, value]) => (
+            <input key={name} type="hidden" name={name} value={value} />
+          ))}
           <div className="grid gap-4 sm:grid-cols-[1fr_14rem]">
             <div className="flex flex-col gap-2">
               <Label htmlFor="exercise-q">{t("browser.search")}</Label>
@@ -203,17 +222,34 @@ export async function ExerciseBrowser({
                       inWorkout ? (
                         <span className="inline-flex h-9 items-center gap-1.5 text-sm font-semibold text-primary">
                           <Check aria-hidden="true" className="size-4" />
-                          {t("browser.added")}
+                          {addTo.kind === "workout" ? t("browser.added") : t("browser.inSession")}
                         </span>
                       ) : (
                         <ActionButton
-                          action={addWorkoutExerciseAction.bind(null, addTo.workoutId, exercise.id)}
+                          action={
+                            addTo.kind === "workout"
+                              ? addWorkoutExerciseAction.bind(null, addTo.targetId, exercise.id)
+                              : addTo.kind === "session"
+                                ? addSessionExerciseAction.bind(null, addTo.targetId, exercise.id)
+                                : swapSessionExerciseAction.bind(
+                                    null,
+                                    addTo.targetId,
+                                    exercise.id,
+                                    addTo.inProgram ?? false,
+                                  )
+                          }
                           pendingLabel={t("browser.adding")}
                           size="sm"
-                          aria-label={t("browser.addLabel", { name: exercise.name })}
+                          aria-label={
+                            addTo.kind === "swap"
+                              ? t("browser.pickLabel", { name: exercise.name })
+                              : addTo.kind === "session"
+                                ? t("browser.addToSessionLabel", { name: exercise.name })
+                                : t("browser.addLabel", { name: exercise.name })
+                          }
                         >
-                          <Plus aria-hidden="true" />
-                          {t("browser.add")}
+                          {addTo.kind === "swap" ? null : <Plus aria-hidden="true" />}
+                          {addTo.kind === "swap" ? t("browser.pick") : t("browser.add")}
                         </ActionButton>
                       )
                     ) : (

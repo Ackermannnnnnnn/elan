@@ -65,7 +65,7 @@ export default async function AddExercisesPage({
         settings={settings}
         search={search}
         path={addExercisesUrl(workout.id)}
-        addTo={{ workoutId: workout.id, existing }}
+        addTo={{ kind: "workout", targetId: workout.id, existing }}
       />
     </>
   );

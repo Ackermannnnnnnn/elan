@@ -174,7 +174,10 @@
     "dateOutOfRange": "Choisis une date à moins d'un an d'aujourd'hui.",
     "occurrenceAlreadyChanged": "Cette séance a déjà été déplacée ou sautée pour cette date.",
     "tooManyOwnExercises": "Deux cents exercices personnels au maximum.",
-    "exerciseInUse": "Cet exercice figure dans une séance ou dans ton historique : il ne peut pas être supprimé."
+    "exerciseInUse": "Cet exercice figure dans une séance ou dans ton historique : il ne peut pas être supprimé.",
+    "exerciseAlreadyInSession": "Cet exercice est déjà dans la séance.",
+    "sessionNotOpen": "Cette séance est terminée : elle ne peut plus être modifiée.",
+    "nothingToLink": "Il n'y a pas d'exercice après celui-ci pour faire un superset."
   },
   "Home": {
     "greeting": "Bonjour {name}",
@@ -1227,14 +1230,14 @@
       "pain": "Une douleur pendant un exercice ? Arrête-le. Si elle persiste, consulte un professionnel de santé : l'application ne peut pas établir de diagnostic."
     },
     "session": {
-      "runningLead": "Note la charge et les répétitions de chaque série, puis valide-la.",
+      "runningLead": "Valide chaque série. Champs laissés vides : les valeurs proposées en gris sont enregistrées.",
       "pausedLead": "Séance en pause.",
       "pausedNotice": "La séance est en pause : le chronomètre est arrêté. Reprends-la pour continuer.",
       "elapsed": "Durée de la séance",
       "pause": "Pause",
       "resume": "Reprendre",
       "rest": "Repos : {time}",
-      "restDone": "Repos terminé, série suivante !",
+      "restDone": "C'est reparti !",
       "restClose": "Fermer le minuteur",
       "set": "Série",
       "weight": "Charge",
@@ -1273,7 +1276,42 @@
       "noSet": "Aucune série validée.",
       "better": "Force estimée en hausse de {value} kg",
       "worse": "Force estimée en baisse de {value} kg",
-      "same": "Force estimée identique"
+      "same": "Force estimée identique",
+      "freeName": "Séance libre",
+      "restShort": "Repos",
+      "restTimer": "Minuteur de repos",
+      "restLess": "Retirer 15 secondes",
+      "restMore": "Ajouter 15 secondes",
+      "restSkip": "Passer le repos",
+      "soundOn": "Activer le son",
+      "soundOff": "Couper le son",
+      "chainNow": "Enchaîne sans repos :",
+      "nextUp": "Ensuite : {name}",
+      "nextSet": "{name}, série {number}",
+      "holdStart": "Chrono",
+      "holdStop": "Stop · {seconds} s",
+      "note": "Note sur cet exercice",
+      "notePlaceholder": "Ex. : siège cran 4, prise serrée, épaule sensible…",
+      "saveNote": "Enregistrer la note",
+      "emptySession": "Aucun exercice pour l'instant : ajoute ton premier exercice.",
+      "supersetBadge": "Superset {label}",
+      "swap": "Changer",
+      "swapLabel": "Changer « {name} » (machine prise, douleur…)",
+      "replacing": "À la place de : {name}",
+      "lastNote": "Ta note de la dernière fois : {note}",
+      "stopped": "Exercice arrêté.",
+      "moreOptions": "Plus d'options",
+      "hasNote": "note enregistrée",
+      "later": "Faire plus tard",
+      "up": "Monter",
+      "down": "Descendre",
+      "unlink": "Séparer (plus de superset)",
+      "link": "Superset avec « {name} »",
+      "linkShort": "Superset avec le suivant",
+      "chained": "Enchaîné sans repos",
+      "stopExercise": "Arrêter cet exercice",
+      "skipExercise": "Passer cet exercice",
+      "addExercise": "Ajouter un exercice"
     },
     "history": {
       "title": "Historique",
@@ -1331,7 +1369,9 @@
       "title": "Composer mes séances",
       "lead": "Crée tes propres séances à partir de la bibliothèque d'exercices.",
       "newWorkout": "Créer une séance",
-      "library": "Bibliothèque d'exercices"
+      "library": "Bibliothèque d'exercices",
+      "free": "Séance libre",
+      "freeLead": "Pas de plan aujourd'hui ? Lance une séance vide et ajoute les exercices au fur et à mesure."
     },
     "plan": {
       "title": "Organiser la séance",
@@ -1427,7 +1467,11 @@
       "cautionWarning": "Sollicite une zone signalée : {areas}",
       "levelWarning": "Niveau {level}, au-dessus du tien",
       "equipmentWarning": "Matériel non déclaré",
-      "details": "Fiche et progression"
+      "details": "Fiche et progression",
+      "inSession": "Dans la séance",
+      "pick": "Choisir",
+      "pickLabel": "Remplacer par « {name} »",
+      "addToSessionLabel": "Ajouter « {name} » à la séance"
     },
     "addPage": {
       "title": "Ajouter des exercices",
@@ -1476,6 +1520,29 @@
       "play": "Lecture",
       "pause": "Pause",
       "credit": "Photos : Free Exercise DB (domaine public). La vidéo s'ouvre sur YouTube."
+    },
+    "swapPage": {
+      "title": "Changer d'exercice",
+      "back": "Retour à la séance",
+      "heading": "Remplacer « {name} »",
+      "lead": "Alternatives pour le même muscle ({muscle}), compatibles avec ton matériel et tes zones sensibles.",
+      "scopeLabel": "Portée du changement",
+      "thisSession": "Cette séance",
+      "inProgram": "Aussi le programme",
+      "thisSessionHint": "Ton programme ne change pas : la prochaine fois, l'exercice habituel revient.",
+      "inProgramHint": "L'exercice sera aussi remplacé dans ta séance type.",
+      "filtersLabel": "Filtres",
+      "noMachine": "Sans machine",
+      "bodyweight": "Sans matériel",
+      "none": "Aucune alternative avec ces filtres. Cherche dans toute la bibliothèque.",
+      "choosing": "…",
+      "libraryTitle": "Toute la bibliothèque",
+      "searchLibrary": "Chercher dans toute la bibliothèque"
+    },
+    "addToSession": {
+      "title": "Ajouter un exercice",
+      "lead": "Il s'ajoute à la fin de la séance, avec des séries vides.",
+      "back": "Retour à la séance"
     }
   }
 }
