@@ -1,0 +1,161 @@
+@import "tailwindcss";
+
+/* Le mode sombre est piloté par la classe `.dark` posée sur <html>
+   (voir src/components/theme/theme-script.tsx). */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* -----------------------------------------------------------------------------
+   Jetons de design
+   Palette neutre légèrement froide + un seul accent : un bleu outremer.
+   Chaque couleur a un rôle ; les composants n'utilisent que ces rôles.
+   -------------------------------------------------------------------------- */
+:root {
+  --background: #f4f5f8;
+  --surface: #ffffff;
+  --surface-muted: #eaecf1;
+  --foreground: #11141b;
+  --muted-foreground: #586070;
+  --border: #dcdfe6;
+  --border-strong: #b9bfcb;
+
+  --primary: #2336d9;
+  --primary-hover: #1b2bb8;
+  --primary-foreground: #ffffff;
+  --primary-soft: #e6e9fd;
+  --primary-soft-foreground: #1a2aa8;
+
+  --destructive: #c22f27;
+  --destructive-soft: #fbe9e7;
+  --success: #17754f;
+  --success-soft: #e2f4ec;
+  --warning: #8f5a00;
+  --warning-soft: #fdf1d8;
+
+  --ring: #2336d9;
+
+  /* Graphiques : un accent (la donnée qui compte), un gris (le contexte).
+     Couleurs validées contre chaque surface (luminosité, contraste ≥ 3:1). */
+  --chart-accent: #2336d9;
+  --chart-context: #9aa1af;
+  --chart-grid: #e6e8ed;
+  --chart-track: #dfe3fb;
+
+  color-scheme: light;
+}
+
+.dark {
+  --background: #0d0f14;
+  --surface: #161920;
+  --surface-muted: #1f232c;
+  --foreground: #eceef3;
+  --muted-foreground: #9aa2b1;
+  --border: #282d38;
+  --border-strong: #3d4453;
+
+  --primary: #8493ff;
+  --primary-hover: #9dabff;
+  --primary-foreground: #0a0e2c;
+  --primary-soft: #1c2250;
+  --primary-soft-foreground: #c3caff;
+
+  --destructive: #ff8177;
+  --destructive-soft: #3a1714;
+  --success: #5fd0a0;
+  --success-soft: #11301f;
+  --warning: #f0b84a;
+  --warning-soft: #33250a;
+
+  --ring: #8493ff;
+
+  --chart-accent: #7384f5;
+  --chart-context: #6b7382;
+  --chart-grid: #262b35;
+  --chart-track: #232a5c;
+
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
+  --color-foreground: var(--foreground);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-soft: var(--primary-soft);
+  --color-primary-soft-foreground: var(--primary-soft-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-soft: var(--destructive-soft);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-ring: var(--ring);
+  --color-chart-accent: var(--chart-accent);
+  --color-chart-context: var(--chart-context);
+  --color-chart-grid: var(--chart-grid);
+  --color-chart-track: var(--chart-track);
+
+  /* Deux rayons seulement : les contrôles (boutons, champs) et les cartes. */
+  --radius-control: 0.75rem;
+  --radius-card: 1.25rem;
+
+  /* Titres et chiffres : Bricolage Grotesque. Texte courant : Hanken Grotesk.
+     Les deux sont auto-hébergées (aucune requête vers un service tiers). */
+  --font-display: "Bricolage Grotesque Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Hanken Grotesk Variable", ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  body {
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    font-feature-settings: "ss01";
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    letter-spacing: -0.015em;
+    text-wrap: balance;
+  }
+
+  /* Focus clavier visible partout, y compris sur les éléments personnalisés. */
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  /* iOS zoome sur les champs dont le texte fait moins de 16 px. */
+  input,
+  select,
+  textarea {
+    font-size: 1rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

@@ -1,0 +1,1481 @@
+{
+  "Common": {
+    "comingSoon": "Bientôt",
+    "loading": "Chargement…",
+    "retry": "Réessayer",
+    "backHome": "Retour à l'accueil",
+    "save": "Enregistrer",
+    "saving": "Enregistrement…",
+    "saved": "Enregistré.",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "deleting": "Suppression…",
+    "confirmDelete": "Confirmer la suppression",
+    "edit": "Modifier",
+    "add": "Ajouter",
+    "back": "Retour",
+    "continue": "Continuer",
+    "optional": "facultatif",
+    "today": "Aujourd'hui",
+    "yesterday": "Hier",
+    "estimate": "Estimation",
+    "kcal": "kcal",
+    "grams": "g",
+    "kg": "kg",
+    "cm": "cm",
+    "ml": "ml",
+    "minutes": "min",
+    "none": "Aucun",
+    "removeItem": "Retirer {item}"
+  },
+  "Nav": {
+    "label": "Navigation principale",
+    "home": "Accueil",
+    "nutrition": "Nutrition",
+    "training": "Entraînement",
+    "progress": "Progrès",
+    "profile": "Profil",
+    "skipToContent": "Aller au contenu"
+  },
+  "Auth": {
+    "panel": {
+      "headline": "Tes chiffres, ton rythme, un cap clair.",
+      "lead": "Un seul endroit pour ce que tu manges, ce que tu soulèves et ce que dit la balance.",
+      "points": {
+        "calories": "Des calculs transparents : chaque estimation indique sa formule et ses hypothèses.",
+        "data": "Des données privées par défaut : personne d'autre que toi n'y a accès.",
+        "pace": "Un rythme tenable plutôt qu'un régime extrême."
+      }
+    },
+    "fields": {
+      "displayName": "Prénom",
+      "displayNameHint": "C'est le nom affiché dans l'application.",
+      "email": "Adresse e-mail",
+      "password": "Mot de passe",
+      "newPassword": "Nouveau mot de passe",
+      "confirmPassword": "Confirme le mot de passe",
+      "passwordHint": "10 caractères minimum. Une phrase facile à retenir fonctionne très bien.",
+      "showPassword": "Afficher le mot de passe",
+      "hidePassword": "Masquer le mot de passe"
+    },
+    "login": {
+      "title": "Connexion",
+      "subtitle": "Content de te revoir.",
+      "submit": "Se connecter",
+      "submitting": "Connexion…",
+      "forgot": "Mot de passe oublié ?",
+      "noAccount": "Pas encore de compte ?",
+      "signupLink": "Créer un compte"
+    },
+    "signup": {
+      "title": "Créer un compte",
+      "subtitle": "Quelques informations suffisent pour commencer.",
+      "submit": "Créer mon compte",
+      "submitting": "Création du compte…",
+      "hasAccount": "Déjà un compte ?",
+      "loginLink": "Se connecter",
+      "dataNotice": "Tu vas enregistrer des données personnelles (poids, alimentation, activité). Elles ne sont visibles que par toi.",
+      "checkInboxTitle": "Vérifie ta boîte mail",
+      "checkInboxBody": "Si cette adresse peut être utilisée, un lien de confirmation vient d'être envoyé à {email}. Ouvre-le pour activer ton compte.",
+      "checkInboxSpam": "Rien reçu après quelques minutes ? Regarde dans les courriers indésirables.",
+      "backToLogin": "Retour à la connexion"
+    },
+    "forgot": {
+      "title": "Mot de passe oublié",
+      "subtitle": "Indique ton adresse e-mail pour recevoir un lien de réinitialisation.",
+      "submit": "Envoyer le lien",
+      "submitting": "Envoi…",
+      "sentTitle": "Lien envoyé",
+      "sentBody": "Si un compte existe pour {email}, un e-mail avec un lien de réinitialisation vient de partir.",
+      "backToLogin": "Retour à la connexion"
+    },
+    "reset": {
+      "title": "Nouveau mot de passe",
+      "subtitle": "Choisis un mot de passe que tu n'utilises nulle part ailleurs.",
+      "submit": "Enregistrer le mot de passe",
+      "submitting": "Enregistrement…"
+    },
+    "signOut": "Se déconnecter",
+    "signingOut": "Déconnexion…"
+  },
+  "Validation": {
+    "required": "Ce champ est obligatoire.",
+    "emailInvalid": "Cette adresse e-mail n'est pas valide.",
+    "passwordTooShort": "Le mot de passe doit contenir au moins 10 caractères.",
+    "passwordTooLong": "Le mot de passe ne peut pas dépasser 72 caractères.",
+    "passwordMismatch": "Les deux mots de passe ne sont pas identiques.",
+    "displayNameTooLong": "Le prénom ne peut pas dépasser 60 caractères.",
+    "numberInvalid": "Saisis un nombre, par exemple 72,5.",
+    "integerRequired": "Saisis un nombre entier.",
+    "numberTooLow": "Cette valeur est trop basse.",
+    "numberTooHigh": "Cette valeur est trop élevée.",
+    "dateInvalid": "Indique une date valide.",
+    "dateInFuture": "Cette date est dans le futur.",
+    "tooManyItems": "Cette liste est trop longue.",
+    "consentRequired": "Ton accord est nécessaire pour enregistrer ces données.",
+    "textTooLong": "Ce texte est trop long.",
+    "atLeastOneValue": "Renseigne au moins une mesure.",
+    "underAge": "L'application est réservée aux personnes de 18 ans et plus.",
+    "sessionTooShort": "Indique une durée d'au moins 5 minutes.",
+    "macrosTooHigh": "Les protéines et les lipides dépassent à eux seuls les calories indiquées.",
+    "macrosOver100": "Protéines, glucides et lipides ne peuvent pas dépasser 100 g pour 100 g.",
+    "servingsTooMany": "Indique 50 portions au maximum.",
+    "ingredientsRequired": "Ajoute au moins un ingrédient.",
+    "ingredientFood": "Choisis l'aliment dans la liste.",
+    "barcodeInvalid": "Un code-barres compte 8 à 14 chiffres.",
+    "repRangeInvalid": "Le maximum doit être supérieur ou égal au minimum."
+  },
+  "Errors": {
+    "generic": "Une erreur est survenue. Réessaie dans un instant.",
+    "invalidCredentials": "Adresse e-mail ou mot de passe incorrect.",
+    "emailNotConfirmed": "Ton adresse e-mail n'est pas encore confirmée. Ouvre le lien reçu à l'inscription.",
+    "tooManyAttempts": "Trop de tentatives. Patiente quelques minutes avant de réessayer.",
+    "signupUnavailable": "Impossible de créer un compte avec cette adresse. Si tu en as déjà un, connecte-toi.",
+    "weakPassword": "Ce mot de passe est trop fragile ou figure dans une fuite connue. Choisis-en un autre.",
+    "samePassword": "Le nouveau mot de passe doit être différent de l'ancien.",
+    "linkInvalid": "Ce lien n'est plus valide ou a déjà été utilisé. Demande-en un nouveau.",
+    "sessionExpired": "Ta session a expiré. Reconnecte-toi pour continuer.",
+    "profileSaveFailed": "Le profil n'a pas pu être enregistré. Réessaie dans un instant.",
+    "profileLoadFailed": "Impossible de charger ton profil pour le moment.",
+    "page": {
+      "title": "Cette page n'a pas pu s'afficher",
+      "body": "Le problème vient de notre côté. Tes données ne sont pas affectées."
+    },
+    "notFound": {
+      "title": "Page introuvable",
+      "body": "Cette adresse ne correspond à aucune page."
+    },
+    "serviceUnreachable": "Le service de comptes est injoignable. Vérifie ta connexion, puis réessaie.",
+    "saveFailed": "L'enregistrement a échoué. Réessaie dans un instant.",
+    "deleteFailed": "La suppression a échoué. Réessaie dans un instant.",
+    "servingUndefined": "Cet aliment n'a pas de portion définie : indique une quantité en grammes.",
+    "goalNotAllowed": "Cet objectif ne peut pas être enregistré tel quel. Reviens à l'étape « Objectif » pour l'ajuster.",
+    "targetsTooLow": "Cette cible est trop basse pour être suivie sans accompagnement. Parles-en à un médecin ou à un diététicien.",
+    "nothingToCopy": "Aucun aliment enregistré pour ce repas ce jour-là.",
+    "itemNotFound": "Cet élément n'existe plus.",
+    "catalogueMissing": "La base d'aliments CIQUAL n'est pas installée. Applique les migrations de la base (npx supabase db push).",
+    "nothingToAdd": "Toutes les recettes de départ sont déjà dans ton carnet.",
+    "noTargets": "Aucun objectif calorique n'est défini : termine l'onboarding ou fixe tes cibles dans ton profil.",
+    "noEligibleRecipes": "Aucune de tes recettes ne respecte tes contraintes (allergies, régime, ingrédients exclus, temps). Ajoute ou modifie des recettes.",
+    "noMealPlan": "Il n'y a pas de plan pour cette semaine.",
+    "futureDay": "Ce jour n'est pas encore arrivé : le journal ne s'écrit pas à l'avance.",
+    "alreadyLogged": "Ce repas est déjà dans ton journal.",
+    "offNotFound": "Ce code-barres n'est pas dans Open Food Facts.",
+    "offIncomplete": "La fiche Open Food Facts de ce produit est incomplète (valeurs nutritionnelles manquantes).",
+    "offUnavailable": "Open Food Facts ne répond pas pour le moment. Réessaie dans un instant.",
+    "noExercisesAvailable": "Aucun exercice ne correspond à ces réglages. Ajoute du matériel ou retire une zone sensible.",
+    "replacementNotAllowed": "Cet exercice ne convient plus à tes réglages. Choisis-en un autre dans la liste.",
+    "tooManySets": "Trente séries au maximum par exercice.",
+    "setAlreadyDone": "La dernière série est déjà validée : elle ne peut pas être retirée.",
+    "tooManyWorkouts": "Quatorze séances types au maximum.",
+    "emptyWorkout": "Cette séance ne contient aucun exercice : ajoute-en d'abord.",
+    "exerciseAlreadyInWorkout": "Cet exercice est déjà dans la séance.",
+    "tooManyExercises": "Vingt exercices au maximum par séance.",
+    "dateOutOfRange": "Choisis une date à moins d'un an d'aujourd'hui.",
+    "occurrenceAlreadyChanged": "Cette séance a déjà été déplacée ou sautée pour cette date.",
+    "tooManyOwnExercises": "Deux cents exercices personnels au maximum.",
+    "exerciseInUse": "Cet exercice figure dans une séance ou dans ton historique : il ne peut pas être supprimé."
+  },
+  "Home": {
+    "greeting": "Bonjour {name}",
+    "greetingAnonymous": "Bonjour",
+    "today": {
+      "title": "Aujourd'hui",
+      "remaining": "kcal restantes",
+      "over": "kcal au-dessus de l'objectif",
+      "consumedOf": "{consumed} kcal consommées sur {target}",
+      "meals": "{count, plural, =0 {Aucun aliment enregistré} one {# aliment enregistré} other {# aliments enregistrés}}",
+      "protein": "Protéines",
+      "carbs": "Glucides",
+      "fat": "Lipides",
+      "gramsOf": "{value} g sur {target} g",
+      "addMeal": "Ajouter un repas",
+      "openDiary": "Ouvrir le journal",
+      "noTargets": "Tes objectifs nutritionnels ne sont pas encore calculés.",
+      "setTargets": "Définir mes objectifs"
+    },
+    "weight": {
+      "title": "Poids",
+      "current": "Dernière pesée",
+      "on": "le {date}",
+      "none": "Aucune pesée pour l'instant.",
+      "log": "Enregistrer une pesée",
+      "details": "Voir mes progrès",
+      "chartTitle": "30 derniers jours"
+    },
+    "water": {
+      "title": "Eau",
+      "total": "{value} L sur {target} L",
+      "totalNoGoal": "{value} L",
+      "add": "Ajouter {amount} ml",
+      "undo": "Annuler le dernier ajout",
+      "indicative": "Repère indicatif, à adapter à la chaleur et à l'effort."
+    },
+    "steps": {
+      "title": "Pas",
+      "label": "Pas effectués aujourd'hui",
+      "save": "Enregistrer",
+      "goal": "sur {target}",
+      "none": "Non renseigné"
+    },
+    "history": {
+      "title": "14 derniers jours",
+      "calories": "Calories",
+      "protein": "Protéines",
+      "target": "Objectif {value}",
+      "empty": "Les graphiques apparaîtront dès que tu auras enregistré des repas.",
+      "table": "Voir les données",
+      "day": "Jour",
+      "kcal": "kcal",
+      "grams": "g",
+      "noEntry": "Rien d'enregistré"
+    },
+    "recalculate": {
+      "message": "Ton poids a changé de {delta} kg depuis le calcul de tes besoins. Tes objectifs peuvent être mis à jour.",
+      "action": "Recalculer mes objectifs",
+      "pending": "Calcul…",
+      "done": "Objectifs mis à jour."
+    }
+  },
+  "Sections": {
+    "training": {
+      "title": "Entraînement",
+      "lead": "Un programme à ta mesure, et le suivi de chaque séance.",
+      "features": {
+        "program": {
+          "title": "Programme personnalisé",
+          "body": "Construit selon ton niveau, ton matériel et le temps dont tu disposes."
+        },
+        "session": {
+          "title": "Séance guidée",
+          "body": "Séries, charges et répétitions enregistrées au fil de l'entraînement."
+        },
+        "swap": {
+          "title": "Remplacer un exercice",
+          "body": "Une alternative qui travaille le même muscle avec le matériel que tu as."
+        },
+        "history": {
+          "title": "Historique des performances",
+          "body": "L'évolution de tes charges, exercice par exercice."
+        }
+      }
+    }
+  },
+  "Profile": {
+    "title": "Profil",
+    "lead": "Ton compte et tes réglages.",
+    "identity": {
+      "title": "Identité",
+      "description": "Le prénom utilisé pour s'adresser à toi dans l'application.",
+      "email": "Adresse e-mail",
+      "save": "Enregistrer",
+      "saving": "Enregistrement…",
+      "saved": "Profil enregistré."
+    },
+    "appearance": {
+      "title": "Apparence",
+      "description": "Ce réglage est mémorisé sur cet appareil.",
+      "legend": "Thème",
+      "light": "Clair",
+      "dark": "Sombre",
+      "system": "Automatique"
+    },
+    "session": {
+      "title": "Session",
+      "description": "Tu resteras connecté sur cet appareil tant que tu ne te déconnectes pas."
+    }
+  },
+  "Setup": {
+    "title": "Il reste une étape : relier la base de données",
+    "lead": "L'application est installée, mais elle ne sait pas encore où enregistrer les comptes et les données. Rien n'est simulé : tant que Supabase n'est pas configuré, aucune page ne s'affiche.",
+    "steps": {
+      "project": {
+        "title": "Créer un projet Supabase",
+        "body": "Sur supabase.com, crée un projet dans une région européenne."
+      },
+      "env": {
+        "title": "Renseigner les deux variables",
+        "body": "Copie .env.example vers .env.local, puis colle l'URL du projet et sa clé publiable."
+      },
+      "migrate": {
+        "title": "Créer les tables",
+        "body": "Applique les migrations du dossier supabase/migrations avec la commande ci-dessous."
+      },
+      "restart": {
+        "title": "Relancer le serveur",
+        "body": "Arrête puis relance npm run dev : cette page laissera place à la connexion."
+      }
+    },
+    "missing": "Variables manquantes ou invalides",
+    "readme": "Le fichier README.md détaille chaque étape."
+  },
+  "Options": {
+    "sex": {
+      "female": "Femme",
+      "male": "Homme",
+      "unspecified": "Je préfère ne pas répondre"
+    },
+    "goalType": {
+      "fat_loss": {
+        "label": "Perdre de la graisse",
+        "description": "Un déficit calorique modéré, en préservant le muscle."
+      },
+      "maintenance": {
+        "label": "Maintenir mon poids",
+        "description": "Manger à hauteur de mes besoins."
+      },
+      "muscle_gain": {
+        "label": "Prendre du muscle",
+        "description": "Un léger surplus calorique, avec de la musculation."
+      },
+      "recomposition": {
+        "label": "Recomposition corporelle",
+        "description": "Perdre un peu de graisse tout en gagnant du muscle, lentement."
+      },
+      "fitness": {
+        "label": "Améliorer ma forme",
+        "description": "Bouger plus et mieux manger, sans viser un poids."
+      }
+    },
+    "pace": {
+      "gentle": {
+        "label": "Doux",
+        "loss": "Environ 0,25 % du poids par semaine. Peu de faim, facile à tenir, plus long.",
+        "gain": "Environ 0,1 % du poids par semaine. Prise de gras minimale."
+      },
+      "moderate": {
+        "label": "Modéré",
+        "loss": "Environ 0,5 % du poids par semaine. Le compromis recommandé.",
+        "gain": "Environ 0,25 % du poids par semaine. Le compromis recommandé."
+      },
+      "fast": {
+        "label": "Soutenu",
+        "loss": "Environ 0,75 % du poids par semaine. Plus de faim, récupération et performances en baisse.",
+        "gain": "Environ 0,4 % du poids par semaine. Progression plus rapide, mais plus de gras."
+      }
+    },
+    "occupation": {
+      "sedentary": "Assis la plupart du temps",
+      "standing": "Debout, peu de déplacements",
+      "active": "En mouvement une bonne partie de la journée",
+      "physical": "Travail physique"
+    },
+    "activityLevel": {
+      "sedentary": {
+        "label": "Sédentaire",
+        "description": "Travail assis, peu de marche, pas ou très peu de sport."
+      },
+      "light": {
+        "label": "Légèrement actif",
+        "description": "Un peu de marche ou 1 à 2 séances de sport par semaine."
+      },
+      "moderate": {
+        "label": "Modérément actif",
+        "description": "3 à 4 séances par semaine, ou un quotidien actif."
+      },
+      "active": {
+        "label": "Très actif",
+        "description": "5 à 6 séances par semaine, ou un métier actif avec du sport."
+      },
+      "very_active": {
+        "label": "Extrêmement actif",
+        "description": "Travail physique et entraînement intensif presque tous les jours."
+      }
+    },
+    "trainingLevel": {
+      "beginner": "Débutant",
+      "intermediate": "Intermédiaire",
+      "advanced": "Avancé"
+    },
+    "trainingLocation": {
+      "gym": "Salle de sport",
+      "home": "À domicile",
+      "both": "Les deux",
+      "outdoor": "En extérieur"
+    },
+    "equipment": {
+      "dumbbells": "Haltères",
+      "barbell": "Barre et disques",
+      "bench": "Banc",
+      "pull_up_bar": "Barre de traction",
+      "resistance_bands": "Élastiques",
+      "kettlebell": "Kettlebell",
+      "machines": "Machines guidées",
+      "cardio_machine": "Appareil de cardio",
+      "mat": "Tapis"
+    },
+    "dietType": {
+      "omnivore": "Omnivore",
+      "flexitarian": "Flexitarien",
+      "pescatarian": "Pescétarien",
+      "vegetarian": "Végétarien",
+      "vegan": "Végétalien"
+    },
+    "allergen": {
+      "gluten": "Gluten",
+      "crustaceans": "Crustacés",
+      "eggs": "Œufs",
+      "fish": "Poisson",
+      "peanuts": "Arachides",
+      "soy": "Soja",
+      "milk": "Lait",
+      "nuts": "Fruits à coque",
+      "celery": "Céleri",
+      "mustard": "Moutarde",
+      "sesame": "Sésame",
+      "sulphites": "Sulfites",
+      "lupin": "Lupin",
+      "molluscs": "Mollusques"
+    },
+    "cookingSkill": {
+      "beginner": "Débutant",
+      "intermediate": "À l'aise",
+      "advanced": "Confirmé"
+    },
+    "mealStyle": {
+      "budget": "Économiques",
+      "quick": "Rapides",
+      "varied": "Variés",
+      "repetitive": "Répétitifs, pour simplifier"
+    },
+    "kitchenEquipment": {
+      "stove": "Plaques de cuisson",
+      "oven": "Four",
+      "microwave": "Micro-ondes",
+      "air_fryer": "Air fryer",
+      "blender": "Mixeur",
+      "rice_cooker": "Cuiseur à riz",
+      "freezer": "Congélateur"
+    },
+    "programStructure": {
+      "walking": "Commencer par la marche quotidienne, puis ajouter une à deux séances quand tu te sens prêt.",
+      "full_body": "Corps entier à chaque séance (full body).",
+      "upper_lower": "Deux séances « haut du corps » et deux séances « bas du corps » (upper / lower).",
+      "push_pull_legs": "Répartition pousser / tirer / jambes (push / pull / legs)."
+    },
+    "mealCategory": {
+      "breakfast": "Petit-déjeuner",
+      "lunch": "Déjeuner",
+      "dinner": "Dîner",
+      "snack": "Collations"
+    },
+    "preparationState": {
+      "as_sold": "Tel que vendu",
+      "raw": "Cru",
+      "cooked": "Cuit",
+      "unknown": "Non précisé"
+    },
+    "basis": {
+      "100g": "pour 100 g",
+      "100ml": "pour 100 ml"
+    }
+  },
+  "Onboarding": {
+    "meta": "Bienvenue",
+    "editMeta": "Modifier mon profil",
+    "progress": "Étape {current} sur {total}",
+    "stepNames": {
+      "personal": "Toi",
+      "goal": "Objectif",
+      "activity": "Activité",
+      "food": "Alimentation",
+      "result": "Ton plan"
+    },
+    "back": "Retour",
+    "next": "Continuer",
+    "finish": "Enregistrer et commencer",
+    "finishEdit": "Enregistrer les modifications",
+    "finishing": "Enregistrement…",
+    "personal": {
+      "title": "Faisons connaissance",
+      "lead": "Ces informations servent à estimer tes besoins en énergie. Tu pourras les modifier à tout moment.",
+      "birthDate": "Date de naissance",
+      "birthDateHint": "L'application est réservée aux personnes majeures.",
+      "sex": "Sexe",
+      "sexHint": "Utilisé uniquement par la formule de métabolisme. Sans réponse, le calcul prend la moyenne des deux valeurs et l'estimation est un peu moins précise.",
+      "height": "Taille",
+      "weight": "Poids actuel",
+      "weightHint": "Idéalement mesuré le matin, à jeun.",
+      "waist": "Tour de taille",
+      "waistHint": "Mesuré au niveau du nombril, sans serrer.",
+      "consent": "J'accepte que mes données de santé (poids, mensurations, alimentation, activité) soient enregistrées pour faire fonctionner mon suivi.",
+      "consentHint": "Elles ne sont visibles que par toi et ne sont partagées avec personne.",
+      "underAge": "L'application est réservée aux personnes de 18 ans et plus. Pour un mineur, un suivi du poids se fait avec un médecin."
+    },
+    "goal": {
+      "title": "Quel est ton objectif ?",
+      "lead": "Il détermine tes calories et la répartition de tes macronutriments.",
+      "goalType": "Objectif",
+      "targetWeight": "Poids visé",
+      "targetWeightOptional": "Poids visé",
+      "pace": "Rythme",
+      "paceHint": "Plus le rythme est rapide, plus la faim, la fatigue et la perte de muscle augmentent. Un rythme tenable donne de meilleurs résultats sur la durée.",
+      "blocking": {
+        "target_underweight": "Ce poids correspondrait à une insuffisance pondérale (IMC inférieur à 18,5). Pour ta taille, le poids minimal conseillé est de {minimum} kg.",
+        "already_underweight": "Ton poids actuel est déjà en dessous de la zone considérée comme saine (IMC inférieur à 18,5). L'application ne propose pas de perte de poids dans cette situation : parles-en à un médecin, ou choisis un autre objectif.",
+        "target_not_below_current": "Pour une perte de poids, le poids visé doit être inférieur à ton poids actuel.",
+        "target_not_above_current": "Pour une prise de masse, le poids visé doit être supérieur à ton poids actuel.",
+        "under_age": "L'application est réservée aux personnes de 18 ans et plus."
+      }
+    },
+    "activity": {
+      "title": "Ton activité",
+      "lead": "Le sport compte, mais ce que tu fais le reste de la journée pèse souvent davantage.",
+      "occupation": "Ta journée type",
+      "steps": "Pas par jour, en moyenne",
+      "stepsHint": "Si tu ne sais pas, laisse vide.",
+      "sessions": "Séances de sport par semaine",
+      "sessionMinutes": "Durée d'une séance",
+      "trainingLevel": "Ton niveau",
+      "trainingLocation": "Où t'entraînes-tu ?",
+      "equipment": "Matériel disponible",
+      "sports": "Sports pratiqués",
+      "sportsPlaceholder": "Musculation, padel, course…",
+      "activityLevel": "Niveau d'activité retenu pour le calcul",
+      "activityLevelHint": "Proposé d'après tes réponses ci-dessus. Tu peux le corriger.",
+      "suggested": "Suggéré"
+    },
+    "food": {
+      "title": "Ton alimentation",
+      "lead": "Ces préférences serviront à construire tes repas et ta liste de courses.",
+      "budget": "Budget alimentaire par semaine",
+      "meals": "Repas par jour",
+      "snacks": "Collations par jour",
+      "dietType": "Régime alimentaire",
+      "allergies": "Allergies",
+      "allergiesHint": "Traitées comme des interdictions strictes : un aliment concerné ne te sera jamais proposé.",
+      "otherAllergies": "Autres allergies",
+      "intolerances": "Intolérances",
+      "excluded": "Ingrédients que tu ne consommes pas",
+      "excludedHint": "Sans justification à donner. Par exemple : porc, alcool.",
+      "liked": "Aliments que tu aimes",
+      "disliked": "Aliments que tu n'aimes pas",
+      "tagPlaceholder": "Tape puis appuie sur Entrée",
+      "cookingTime": "Temps pour cuisiner, par repas",
+      "cookingSkill": "À l'aise en cuisine ?",
+      "mealPrep": "Je peux préparer plusieurs repas à l'avance",
+      "mealStyle": "Tu préfères des repas…",
+      "kitchen": "Équipement de cuisine"
+    },
+    "result": {
+      "title": "Ton plan de départ",
+      "lead": "Voici ce que donnent tes réponses. Ce sont des estimations : elles s'affineront avec tes pesées.",
+      "targetLabel": "Objectif calorique",
+      "perDay": "kcal par jour",
+      "maintenance": "Maintien estimé",
+      "bmr": "Métabolisme de base",
+      "rate": "Rythme attendu",
+      "ratePerWeek": "{rate} kg par semaine",
+      "rateStable": "Poids stable",
+      "duration": "Durée estimée",
+      "weeks": "{count, plural, =0 {Objectif atteint} one {# semaine} other {# semaines}}",
+      "around": "vers le {date}",
+      "macrosTitle": "Répartition quotidienne",
+      "protein": "Protéines",
+      "carbs": "Glucides",
+      "fat": "Lipides",
+      "fiber": "Fibres",
+      "share": "{percent} % de l'énergie",
+      "fiberNote": "repère indicatif",
+      "adjustments": {
+        "deficit_capped": "Le rythme demandé imposait un déficit trop important. Il a été limité à 25 % de ton maintien : le rythme attendu est donc plus lent.",
+        "floor_applied": "La cible a été relevée au plancher de {floor} kcal, en dessous duquel un suivi médical est nécessaire. Le rythme attendu est donc plus lent.",
+        "surplus_capped": "Le surplus a été plafonné pour limiter la prise de gras."
+      },
+      "warnings": {
+        "bmi_high": "Avec un IMC de 35 ou plus, un accompagnement médical rend la perte de poids plus sûre et plus efficace. Parles-en à ton médecin.",
+        "large_loss": "Tu vises une perte de plus de 20 % de ton poids. C'est un projet de longue durée : un suivi par un professionnel de santé est recommandé.",
+        "senior": "À partir de 65 ans, préserver la masse musculaire est prioritaire. Demande l'avis de ton médecin avant de réduire tes apports.",
+        "low_bmi_loss": "Ton IMC est déjà dans le bas de la zone normale. Une perte de poids supplémentaire offre peu de bénéfices : la recomposition corporelle est souvent plus adaptée.",
+        "low_maintenance": "Tes besoins estimés sont déjà bas. Réduire davantage tes apports demande l'avis d'un professionnel de santé."
+      },
+      "strategyTitle": "Par où commencer",
+      "strategyProtein": "Vise environ {grams} g de protéines à chacun de tes {meals, plural, one {# repas} other {# repas}}.",
+      "strategyAllergies": "{count, plural, one {Ton allergie est enregistrée} other {Tes # allergies sont enregistrées}} comme interdiction stricte.",
+      "strategyTracking": "Pèse-toi régulièrement, toujours dans les mêmes conditions : c'est la tendance sur plusieurs semaines qui compte, pas la mesure du jour.",
+      "trainingTitle": "Côté entraînement",
+      "trainingDetail": "Le programme détaillé arrivera avec le module Entraînement.",
+      "assumptionsTitle": "Comment ces chiffres sont calculés",
+      "assumptions": {
+        "bmr": "Métabolisme de base : formule de Mifflin-St Jeor, à partir de ton poids ({weight} kg), de ta taille ({height} cm) et de ton âge ({age} ans).",
+        "sexAveraged": "Sexe non précisé : le calcul utilise la moyenne des constantes homme et femme, l'écart possible est d'environ 80 kcal.",
+        "activity": "Maintien : métabolisme de base multiplié par {factor} (niveau « {level} »).",
+        "delta": "Écart au maintien : {delta} kcal par jour, sur la base de 7 700 kcal par kilo.",
+        "protein": "Protéines : {perKg} g par kilo, calculées sur {reference} kg.",
+        "accuracy": "Ces formules se trompent couramment de 10 % d'une personne à l'autre. Tes pesées permettront d'ajuster."
+      },
+      "disclaimer": "Ces estimations ne remplacent pas un avis médical. Si tu es enceinte ou allaitante, si tu suis un traitement, ou si tu as ou as eu un trouble du comportement alimentaire, parle de ton projet à un professionnel de santé avant de modifier ton alimentation."
+    }
+  },
+  "Progress": {
+    "title": "Progrès",
+    "lead": "La tendance compte plus que la mesure du jour.",
+    "stats": {
+      "current": "Poids actuel",
+      "since": "Depuis le départ",
+      "remaining": "Reste à parcourir",
+      "trend": "Tendance sur 4 semaines",
+      "perWeek": "{rate} kg par semaine",
+      "noTarget": "Pas de poids visé",
+      "reached": "Objectif atteint",
+      "progress": "{percent} % du chemin",
+      "start": "Départ : {weight} kg",
+      "notEnough": "Pas encore assez de pesées"
+    },
+    "trend": {
+      "insufficient_data": "Il faut au moins 6 pesées réparties sur 3 semaines pour lire une tendance. Tu en as {count} sur les 4 dernières semaines.",
+      "on_track": "Ta tendance va dans le sens de ton objectif. Continue comme ça.",
+      "plateau": "Ton poids est stable depuis au moins trois semaines. Avant de modifier tes calories, vérifie la régularité de ton suivi : pesées dans les mêmes conditions, repas tous enregistrés, quantités pesées plutôt qu'estimées.",
+      "off_track": "Ta tendance s'éloigne de ton objectif depuis plusieurs semaines. Regarde si ton journal reflète bien ce que tu manges, ou si ton objectif est toujours d'actualité.",
+      "stable": "Ton poids est stable, comme prévu."
+    },
+    "weightForm": {
+      "title": "Enregistrer une pesée",
+      "date": "Date",
+      "weight": "Poids",
+      "note": "Note",
+      "notePlaceholder": "Après le sport, en déplacement…",
+      "hint": "Une seule pesée par jour : une nouvelle saisie remplace la précédente.",
+      "save": "Enregistrer la pesée",
+      "saved": "Pesée enregistrée."
+    },
+    "chart": {
+      "title": "Courbe de poids",
+      "range": "Période",
+      "r7": "7 jours",
+      "r30": "30 jours",
+      "r90": "90 jours",
+      "rall": "Tout",
+      "weighIns": "Pesées",
+      "average": "Moyenne sur 7 jours",
+      "target": "Objectif {weight} kg",
+      "empty": "Enregistre ta première pesée pour voir ta courbe.",
+      "emptyRange": "Aucune pesée sur cette période.",
+      "kgAxis": "Poids en kilogrammes"
+    },
+    "history": {
+      "title": "Historique des pesées",
+      "date": "Date",
+      "weight": "Poids",
+      "average": "Moyenne 7 j",
+      "note": "Note",
+      "actions": "Actions",
+      "delete": "Supprimer la pesée du {date}",
+      "showAll": "Afficher les {count} pesées"
+    },
+    "measurements": {
+      "title": "Mensurations",
+      "lead": "Utile quand la balance ne bouge pas : le tour de taille peut diminuer à poids égal.",
+      "waist": "Taille",
+      "hips": "Hanches",
+      "chest": "Poitrine",
+      "arm": "Bras",
+      "thigh": "Cuisse",
+      "save": "Enregistrer les mensurations",
+      "saved": "Mensurations enregistrées.",
+      "empty": "Aucune mensuration enregistrée.",
+      "delete": "Supprimer les mensurations du {date}"
+    },
+    "goals": {
+      "title": "Historique des objectifs",
+      "active": "En cours",
+      "replaced": "Remplacé",
+      "achieved": "Atteint",
+      "abandoned": "Abandonné",
+      "since": "depuis le {date}",
+      "target": "vers {weight} kg"
+    }
+  },
+  "Nutrition": {
+    "title": "Nutrition",
+    "previousDay": "Jour précédent",
+    "nextDay": "Jour suivant",
+    "backToToday": "Revenir à aujourd'hui",
+    "summary": {
+      "title": "Bilan du jour",
+      "calories": "Calories",
+      "kcalOf": "{value} kcal sur {target}",
+      "remaining": "Il reste {value} kcal",
+      "over": "{value} kcal au-dessus de l'objectif",
+      "protein": "Protéines",
+      "carbs": "Glucides",
+      "fat": "Lipides",
+      "fiber": "Fibres",
+      "gramsOf": "{value} g sur {target} g",
+      "grams": "{value} g",
+      "fiberPartial": "au moins {value} g (information absente pour certains aliments)",
+      "noTargets": "Pas d'objectif défini"
+    },
+    "category": {
+      "add": "Ajouter",
+      "addTo": "Ajouter à {category}",
+      "empty": "Rien pour l'instant.",
+      "subtotal": "{value} kcal"
+    },
+    "entry": {
+      "grams": "{value} g",
+      "servings": "{count, plural, one {# portion} other {# portions}}",
+      "macros": "P {protein} g, G {carbs} g, L {fat} g",
+      "estimate": "Estimation",
+      "editLabel": "Modifier {name}",
+      "quick": "Saisie rapide"
+    },
+    "myFoods": "Mes aliments",
+    "add": {
+      "title": "Ajouter à {category}",
+      "tabs": {
+        "foods": "Aliments",
+        "recipes": "Recettes",
+        "quick": "Saisie rapide",
+        "copy": "Copier un repas"
+      },
+      "searchLabel": "Rechercher un aliment",
+      "searchPlaceholder": "Riz, yaourt, poulet…",
+      "searchSubmit": "Rechercher",
+      "recent": "Tes aliments récents",
+      "results": "{count, plural, =0 {Aucun résultat} one {# résultat} other {# résultats}}",
+      "noFoods": "Cherche un aliment ci-dessus.",
+      "noFoodsHint": "La recherche couvre la table CIQUAL (plus de 3 000 aliments courants) et tes propres aliments. Pour un produit emballé, scanne son code-barres.",
+      "createFood": "Créer un aliment",
+      "per100": "Pour {basis} : {kcal} kcal, P {protein} g, G {carbs} g, L {fat} g",
+      "choose": "Choisir {name}",
+      "changeFood": "Choisir un autre aliment",
+      "quantity": "Quantité",
+      "unit": "Unité",
+      "unitGrams": "Grammes",
+      "unitMl": "Millilitres",
+      "unitServings": "Portions ({label})",
+      "servingDefault": "{grams} g",
+      "preview": "Pour cette quantité",
+      "submit": "Ajouter au journal",
+      "submitting": "Ajout…",
+      "scan": "Scanner un code-barres",
+      "recipePerServing": "{kcal} kcal et {protein} g de protéines par portion",
+      "changeRecipe": "Choisir une autre recette",
+      "noRecipes": "Tu n'as pas encore de recette.",
+      "goRecipes": "Voir les recettes",
+      "chooseRecipe": "Choisir {name}"
+    },
+    "quick": {
+      "lead": "Pour un plat dont tu connais les valeurs sans vouloir créer d'aliment.",
+      "description": "Nom",
+      "descriptionPlaceholder": "Sandwich du midi",
+      "kcal": "Calories",
+      "protein": "Protéines",
+      "carbs": "Glucides",
+      "fat": "Lipides",
+      "submit": "Ajouter au journal"
+    },
+    "copy": {
+      "lead": "Reprend les aliments de ce repas tels qu'ils avaient été enregistrés.",
+      "from": "Copier le repas du",
+      "show": "Afficher",
+      "nothing": "Aucun aliment enregistré pour ce repas ce jour-là.",
+      "submit": "{count, plural, one {Copier cet aliment} other {Copier ces # aliments}}",
+      "submitting": "Copie…"
+    },
+    "edit": {
+      "title": "Modifier l'entrée",
+      "category": "Repas",
+      "save": "Enregistrer",
+      "delete": "Supprimer du journal",
+      "foodDeleted": "L'aliment d'origine a été supprimé : seule la suppression de cette entrée reste possible."
+    },
+    "foods": {
+      "title": "Mes aliments",
+      "lead": "Les aliments que tu as créés ou scannés. Ils ne sont visibles que par toi.",
+      "new": "Créer un aliment",
+      "empty": "Aucun aliment pour l'instant.",
+      "editTitle": "Modifier l'aliment",
+      "newTitle": "Nouvel aliment",
+      "name": "Nom",
+      "namePlaceholder": "Fromage blanc 0 %",
+      "brand": "Marque",
+      "basis": "Valeurs exprimées",
+      "state": "État de l'aliment pesé",
+      "stateHint": "100 g de riz cru et 100 g de riz cuit n'ont pas les mêmes valeurs : crée deux aliments si tu utilises les deux.",
+      "valuesTitle": "Valeurs nutritionnelles",
+      "valuesHint": "Recopie le tableau imprimé sur l'emballage.",
+      "kcal": "Énergie",
+      "protein": "Protéines",
+      "carbs": "Glucides",
+      "fat": "Lipides",
+      "fiber": "Fibres",
+      "servingTitle": "Portion",
+      "servingSize": "Poids d'une portion",
+      "servingLabel": "Nom de la portion",
+      "servingLabelPlaceholder": "1 pot, 1 tranche…",
+      "inconsistent": "L'énergie indiquée ne correspond pas aux protéines, glucides et lipides saisis. Vérifie que tu as bien recopié les valeurs pour 100 g, et non par portion.",
+      "save": "Enregistrer l'aliment",
+      "saved": "Aliment enregistré.",
+      "delete": "Supprimer l'aliment",
+      "deleteHint": "Les entrées déjà enregistrées dans ton journal conservent leurs valeurs.",
+      "sourceUser": "Saisi par toi",
+      "sourceVerified": "Donnée vérifiée",
+      "sourceCommunity": "Donnée Open Food Facts",
+      "sourceEstimated": "Estimation",
+      "scan": "Scanner un produit",
+      "allergens": "Allergènes présents (facultatif)",
+      "allergensHint": "Coche ce qu'indique l'étiquette, traces comprises. Ceux que révèle le nom de l'aliment sont ajoutés d'office, par prudence."
+    },
+    "tabs": {
+      "label": "Rubriques de la nutrition",
+      "diary": "Journal",
+      "recipes": "Recettes",
+      "plan": "Plan de la semaine",
+      "shopping": "Courses",
+      "foods": "Aliments"
+    },
+    "aiOff": {
+      "title": "Photo de repas et coach IA : non activés",
+      "body": "Ces fonctions demandent un service d'intelligence artificielle, qui n'est pas configuré. Tout le reste (calculs, base d'aliments, plan et courses) fonctionne sans IA."
+    }
+  },
+  "Targets": {
+    "card": {
+      "title": "Objectifs nutritionnels",
+      "calculated": "Calculés le {date} à partir de ton profil.",
+      "manual": "Réglés manuellement le {date}.",
+      "none": "Aucun objectif défini.",
+      "kcal": "Calories",
+      "protein": "Protéines",
+      "carbs": "Glucides",
+      "fat": "Lipides",
+      "adjust": "Ajuster manuellement",
+      "maintenance": "Maintien estimé : {value} kcal"
+    },
+    "manual": {
+      "title": "Ajuster mes objectifs",
+      "lead": "Tu connais mieux ton quotidien qu'une formule. Les glucides sont déduits de ce qu'il reste.",
+      "kcal": "Calories par jour",
+      "protein": "Protéines",
+      "fat": "Lipides",
+      "carbs": "Glucides (calculés)",
+      "save": "Enregistrer mes objectifs",
+      "tooLow": "En dessous de {floor} kcal par jour, un suivi par un professionnel de santé est nécessaire. L'application n'enregistre pas de cible plus basse.",
+      "macrosTooHigh": "Les protéines et les lipides dépassent à eux seuls les calories indiquées.",
+      "reset": "Revenir au calcul automatique",
+      "resetting": "Calcul…"
+    },
+    "profileCard": {
+      "title": "Profil et objectif",
+      "goal": "Objectif",
+      "targetWeight": "Poids visé",
+      "activity": "Activité",
+      "diet": "Régime",
+      "allergies": "Allergies",
+      "edit": "Modifier mon profil",
+      "allergyCount": "{count, plural, =0 {Aucune} one {# déclarée} other {# déclarées}}"
+    }
+  },
+  "Foods": {
+    "scan": {
+      "title": "Scanner un produit",
+      "lead": "Saisis ou scanne le code-barres d'un produit emballé : ses valeurs nutritionnelles sont récupérées sur Open Food Facts.",
+      "back": "Retour",
+      "barcode": "Code-barres",
+      "barcodeHint": "Les 8 à 14 chiffres sous les barres.",
+      "useCamera": "Utiliser la caméra",
+      "stopCamera": "Arrêter la caméra",
+      "cameraLabel": "Image de la caméra",
+      "cameraError": "La caméra n'est pas accessible. Autorise-la dans ton navigateur, ou saisis le code à la main.",
+      "submit": "Rechercher le produit",
+      "searching": "Recherche…",
+      "createInstead": "Créer l'aliment à la main",
+      "attribution": "Données Open Food Facts (licence ODbL), saisies par une communauté de bénévoles : vérifie-les avec l'étiquette. Le produit est enregistré dans tes aliments, visible par toi seul."
+    }
+  },
+  "Recipes": {
+    "title": "Recettes",
+    "lead": "Tes recettes, avec leurs apports calculés à partir des ingrédients. Le plan de la semaine pioche ici.",
+    "new": "Nouvelle recette",
+    "newTitle": "Nouvelle recette",
+    "newLead": "Choisis les ingrédients dans la base d'aliments : calories et macros sont calculées automatiquement.",
+    "editTitle": "Modifier la recette",
+    "delete": "Supprimer la recette",
+    "empty": "Aucune recette pour l'instant.",
+    "noSlot": "Sans repas attribué",
+    "kcalPerServing": "{value} kcal",
+    "proteinPerServing": "{value} g prot.",
+    "source": "Valeurs nutritionnelles : table CIQUAL de l'ANSES (2025) et tes propres aliments.",
+    "starters": {
+      "title": "Recettes de départ",
+      "lead": "{count, plural, one {Une recette simple, prête à l'emploi, peut être ajoutée} other {# recettes simples (petits-déjeuners, plats, collations) peuvent être ajoutées}} à ton carnet. Tu pourras les modifier ou les supprimer.",
+      "add": "{count, plural, one {Ajouter cette recette} other {Ajouter les # recettes}}",
+      "adding": "Ajout…"
+    },
+    "diet": {
+      "plant": "Végétalien",
+      "vegetarian": "Végétarien",
+      "fish": "Poisson",
+      "meat": "Viande",
+      "unknown": "Régime à vérifier"
+    },
+    "minutes": "{count} min",
+    "incomplete": "Calcul incomplet",
+    "incompleteHint": "Un ingrédient n'a plus d'aliment associé : les apports affichés sont un minimum.",
+    "allergens": "Allergènes : {list}",
+    "perServingTitle": "Par portion",
+    "kcal": "Énergie",
+    "protein": "Protéines",
+    "carbs": "Glucides",
+    "fat": "Lipides",
+    "servingsInfo": "{count, plural, one {Recette pour # portion} other {Recette pour # portions}}",
+    "ingredientsTitle": "Ingrédients",
+    "optional": "facultatif",
+    "foodMissing": "Aliment supprimé : valeurs non comptées",
+    "stepsTitle": "Préparation",
+    "log": {
+      "title": "Ajouter au journal",
+      "date": "Jour",
+      "meal": "Repas",
+      "portions": "Portions mangées",
+      "portionsUnit": "portion(s)",
+      "preview": "Soit {kcal} kcal et {protein} g de protéines.",
+      "submit": "Ajouter au journal"
+    },
+    "form": {
+      "title": "Nom de la recette",
+      "titlePlaceholder": "Poulet, riz et brocolis",
+      "description": "Description",
+      "servings": "Nombre de portions",
+      "servingsHint": "Pour combien de portions sont les quantités ci-dessous.",
+      "servingsUnit": "portions",
+      "prep": "Préparation",
+      "cook": "Cuisson",
+      "slots": "Repas",
+      "slotsHint": "Pour quels repas le plan de la semaine peut proposer cette recette.",
+      "ingredients": "Ingrédients",
+      "ingredientsHint": "Quantités crues, en grammes, pour toute la recette.",
+      "noIngredients": "Aucun ingrédient pour l'instant.",
+      "addIngredient": "Ajouter un ingrédient",
+      "searchPlaceholder": "Rechercher : riz, poulet, tomate…",
+      "searching": "Recherche…",
+      "results": "{count, plural, =0 {Aucun aliment trouvé} one {# aliment trouvé} other {# aliments trouvés}}",
+      "per100": "{kcal} kcal, {protein} g prot. pour 100 g",
+      "pick": "Ajouter {name}",
+      "source": {
+        "ciqual": "CIQUAL",
+        "open_food_facts": "Open Food Facts",
+        "user": "Mon aliment",
+        "ai_estimate": "Estimation"
+      },
+      "quantity": "Quantité",
+      "display": "En cuisine",
+      "displayPlaceholder": "2 œufs…",
+      "optionalIngredient": "Facultatif (non compté)",
+      "preview": "Environ {kcal} kcal et {protein} g de protéines par portion.",
+      "steps": "Étapes",
+      "stepsHint": "Une étape par ligne.",
+      "tags": "Étiquettes",
+      "tagsPlaceholder": "rapide, meal prep…",
+      "create": "Créer la recette",
+      "save": "Enregistrer la recette"
+    }
+  },
+  "MealPlan": {
+    "title": "Plan de la semaine",
+    "lead": "Des repas choisis parmi tes recettes pour approcher tes objectifs, en respectant tes allergies, ton régime et ton temps de cuisine.",
+    "previousWeek": "Semaine précédente",
+    "nextWeek": "Semaine suivante",
+    "weekOf": "Semaine du {date}",
+    "generate": "Générer le plan",
+    "regenerate": "Générer un autre plan",
+    "generating": "Calcul du plan…",
+    "shopping": "Liste de courses",
+    "targets": "Objectif quotidien : {kcal} kcal et {protein} g de protéines.",
+    "missingSlots": "Aucune de tes recettes ne convient pour : {slots}. Leur part de la journée est répartie sur les autres repas.",
+    "dayKcal": "{value} kcal",
+    "dayProtein": "{value} g prot.",
+    "offTarget": "Assez loin de l'objectif de {target} kcal ce jour-là.",
+    "lowProtein": "Protéines en dessous de 80 % de l'objectif.",
+    "dayEmpty": "Aucun repas prévu.",
+    "portions": "{count, plural, one {# portion} other {# portions}}",
+    "itemMacros": "{kcal} kcal, {protein} g prot.",
+    "remove": "Retirer {name} du plan",
+    "logged": "Dans le journal",
+    "log": "Ajouter au journal",
+    "swap": "Changer",
+    "swapTo": "{name} ({kcal} kcal par portion)",
+    "delete": "Supprimer le plan",
+    "noAi": "Ce plan est calculé par un algorithme à partir de tes recettes et de tes objectifs, sans intelligence artificielle. Les portions sont ajustées par quarts. Les allergènes des aliments CIQUAL sont déduits de leur nom, avec prudence : vérifie toujours l'étiquette des produits que tu achètes.",
+    "empty": {
+      "title": "Pas encore de plan pour cette semaine",
+      "lead": "Le plan choisit chaque repas parmi tes recettes compatibles et ajuste les portions pour approcher ton objectif.",
+      "targets": "Objectif : {kcal} kcal et {protein} g de protéines par jour.",
+      "noTargets": "Aucun objectif calorique défini : termine l'onboarding ou fixe tes cibles dans ton profil.",
+      "recipes": "{count, plural, =0 {Aucune recette compatible avec tes préférences.} one {# recette compatible avec tes préférences.} other {# recettes compatibles avec tes préférences.}}",
+      "excluded": "{count, plural, one {# recette écartée (allergie, régime, ingrédient exclu ou temps de préparation).} other {# recettes écartées (allergie, régime, ingrédient exclu ou temps de préparation).}}",
+      "goRecipes": "Ajouter des recettes"
+    }
+  },
+  "Shopping": {
+    "title": "Liste de courses",
+    "lead": "Les ingrédients du plan de la semaine, additionnés et rangés par rayon.",
+    "previousWeek": "Semaine précédente",
+    "nextWeek": "Semaine suivante",
+    "weekOf": "Semaine du {date}",
+    "listTitle": "Courses de la semaine du {date}",
+    "generating": "Préparation de la liste…",
+    "regenerate": "Recalculer depuis le plan",
+    "regenerateHint": "Utile après avoir modifié le plan. Les articles ajoutés à la main et les prix déjà saisis sont conservés.",
+    "noPlan": {
+      "title": "Pas de plan pour cette semaine",
+      "lead": "La liste de courses se calcule à partir du plan de la semaine.",
+      "action": "Créer le plan"
+    },
+    "generate": {
+      "title": "Liste pas encore préparée",
+      "lead": "Les quantités de chaque recette du plan sont additionnées et arrondies au-dessus, puis rangées par rayon.",
+      "action": "Préparer la liste de courses"
+    },
+    "summary": {
+      "remaining": "Reste à acheter",
+      "items": "{count, plural, =0 {Tout est pris} one {# article} other {# articles}}",
+      "known": "Total des prix saisis",
+      "unpriced": "{count, plural, one {# article sans prix} other {# articles sans prix}}",
+      "allPriced": "Tous les articles ont un prix",
+      "budget": "Budget hebdomadaire",
+      "noBudget": "Non défini",
+      "over": "{value} au-dessus du budget",
+      "under": "{value} sous le budget"
+    },
+    "pricesHint": "Aucun prix n'est inventé : seuls ceux que tu saisis sont additionnés.",
+    "aisle": {
+      "produce": "Fruits et légumes",
+      "bakery": "Boulangerie",
+      "meat_fish": "Viandes et poissons",
+      "dairy_eggs": "Produits laitiers et œufs",
+      "grocery": "Épicerie",
+      "frozen": "Surgelés",
+      "drinks": "Boissons",
+      "other": "Autres",
+      "manual": "Ajoutés à la main"
+    },
+    "check": "Cocher {name}",
+    "uncheck": "Décocher {name}",
+    "owned": "déjà à la maison",
+    "markOwned": "Déjà à la maison",
+    "notOwned": "À acheter",
+    "priceLabel": "Prix de {name}",
+    "pricePlaceholder": "Prix",
+    "savePrice": "OK",
+    "manual": {
+      "title": "Ajouter un article",
+      "name": "Article",
+      "namePlaceholder": "Papier toilette, café…",
+      "quantity": "Quantité",
+      "submit": "Ajouter à la liste"
+    }
+  },
+  "Training": {
+    "title": "Entraînement",
+    "lead": "Ton programme de la semaine, tes séances et tes progrès.",
+    "programSummary": "{goal} · {level} · {sessions} séances de {minutes} min par semaine",
+    "editProgram": "Modifier le programme",
+    "week": "Ta semaine",
+    "today": "Aujourd'hui",
+    "restDay": "Repos",
+    "workoutSummary": "{count, plural, one {# exercice} other {# exercices}}, environ {minutes} min",
+    "start": "Démarrer",
+    "starting": "Démarrage…",
+    "resume": "Reprendre la séance",
+    "activeRunning": "Séance en cours : {name}.",
+    "activePaused": "Séance en pause : {name}.",
+    "recent": "Dernières séances",
+    "backToWorkout": "Retour à la séance",
+    "moveDay": "Jour de la séance",
+    "moveTo": "Déplacer au {day}",
+    "exerciseNumber": "Exercice {number}",
+    "setsTimes": "{sets} × {reps}",
+    "repsRange": "{min} à {max} répétitions",
+    "secondsRange": "{min} à {max} s",
+    "restSeconds": "repos {seconds} s",
+    "bodyweight": "Poids du corps",
+    "replaced": "Remplacé",
+    "fewerSets": "Une série de moins pour {name}",
+    "moreSets": "Une série de plus pour {name}",
+    "instructions": "Consignes d'exécution",
+    "replace": "Remplacer",
+    "replaceEasier": "Plus facile, sans machine",
+    "weekday": {
+      "1": "Lundi",
+      "2": "Mardi",
+      "3": "Mercredi",
+      "4": "Jeudi",
+      "5": "Vendredi",
+      "6": "Samedi",
+      "7": "Dimanche"
+    },
+    "weekdayShort": {
+      "1": "Lun",
+      "2": "Mar",
+      "3": "Mer",
+      "4": "Jeu",
+      "5": "Ven",
+      "6": "Sam",
+      "7": "Dim"
+    },
+    "goal": {
+      "fat_loss": "Perte de graisse",
+      "hypertrophy": "Prise de muscle",
+      "strength": "Force",
+      "endurance": "Endurance musculaire",
+      "general_fitness": "Remise en forme"
+    },
+    "focus": {
+      "full_body": "Corps entier",
+      "upper": "Haut du corps",
+      "lower": "Bas du corps",
+      "push": "Poussée",
+      "pull": "Tirage",
+      "legs": "Jambes"
+    },
+    "structure": {
+      "full_body": {
+        "name": "Programme corps entier",
+        "description": "Tout le corps à chaque séance. Idéal de 1 à 3 séances par semaine."
+      },
+      "upper_lower": {
+        "name": "Programme haut / bas du corps",
+        "description": "Haut et bas du corps en alternance. Idéal à 4 séances."
+      },
+      "push_pull_legs": {
+        "name": "Programme poussée / tirage / jambes",
+        "description": "Trois séances spécialisées. Pour 5 ou 6 séances, avec de l'expérience."
+      }
+    },
+    "muscle": {
+      "chest": "Pectoraux",
+      "back": "Dos",
+      "shoulders": "Épaules",
+      "biceps": "Biceps",
+      "triceps": "Triceps",
+      "forearms": "Avant-bras",
+      "core": "Abdominaux et gainage",
+      "glutes": "Fessiers",
+      "quadriceps": "Quadriceps",
+      "hamstrings": "Ischio-jambiers",
+      "calves": "Mollets",
+      "full_body": "Corps entier",
+      "cardio": "Cardio"
+    },
+    "area": {
+      "shoulder": "Épaule",
+      "elbow": "Coude",
+      "wrist": "Poignet",
+      "lower_back": "Bas du dos",
+      "hip": "Hanche",
+      "knee": "Genou",
+      "ankle": "Cheville",
+      "neck": "Nuque"
+    },
+    "empty": {
+      "title": "Crée ton programme",
+      "lead": "Quelques questions, et le programme est construit à partir d'une bibliothèque de 68 exercices.",
+      "point1": "Adapté à ton matériel, à ton niveau et au temps dont tu disposes.",
+      "point2": "Aucun exercice risqué pour une zone que tu déclares sensible.",
+      "point3": "Chaque exercice peut être remplacé, chaque séance déplacée.",
+      "action": "Créer mon programme",
+      "custom": "Composer ma propre séance",
+      "or": "Tu préfères choisir toi-même tes exercices ?"
+    },
+    "aiOff": {
+      "title": "Coach sportif IA : non activé",
+      "body": "Le programme, les remplacements et la progression des charges sont calculés par l'application, sans intelligence artificielle. Un coach conversationnel demanderait un service payant : il n'est pas activé."
+    },
+    "setup": {
+      "title": "Ton programme",
+      "lead": "Ces réponses servent à choisir les exercices, les séries et les temps de repos. Tu pourras tout ajuster ensuite.",
+      "goal": "Objectif",
+      "level": "Niveau",
+      "sessions": "Séances par semaine",
+      "perWeek": "par sem.",
+      "minutes": "Durée maximale d'une séance",
+      "location": "Lieu",
+      "gymEquipment": "En salle, tout le matériel courant est considéré comme disponible.",
+      "equipment": "Matériel disponible",
+      "equipmentHint": "Sans matériel coché, le programme n'utilise que le poids du corps.",
+      "limitations": "Zones sensibles ou douloureuses",
+      "limitationsHint": "Les exercices qui sollicitent ces zones ne seront pas proposés. En cas de douleur persistante, demande l'avis d'un professionnel de santé.",
+      "priority": "Muscles à privilégier",
+      "structure": "Organisation de la semaine",
+      "recommended": "conseillé",
+      "submit": "Créer mon programme",
+      "regenerate": "Créer un nouveau programme",
+      "generating": "Construction du programme…",
+      "replaceWarning": "Un nouveau programme remplacera l'actuel. Tes séances composées à la main et ton historique sont conservés.",
+      "disclaimer": "Ces séances sont des propositions générales, pas un avis médical. Échauffe-toi, privilégie une technique propre et arrête un exercice qui fait mal."
+    },
+    "replacePage": {
+      "title": "Remplacer un exercice",
+      "heading": "Remplacer : {name}",
+      "lead": "Alternatives qui travaillent aussi : {muscle}. Elles tiennent compte de ton matériel, de ton niveau, de tes zones sensibles et des exercices déjà dans la séance.",
+      "filtersLabel": "Filtres",
+      "filters": {
+        "easier": "Plus facile",
+        "noMachine": "Sans machine",
+        "bodyweight": "Sans matériel"
+      },
+      "sameMovement": "Même mouvement",
+      "choose": "Choisir",
+      "chooseLabel": "Remplacer par {name}",
+      "chooseAndDislike": "Choisir et ne plus proposer « {name} »",
+      "replacing": "Remplacement…",
+      "none": "Aucune alternative avec ces critères.",
+      "noneHint": "Retire un filtre, ou ajoute du matériel dans les réglages du programme.",
+      "pain": "Une douleur pendant un exercice ? Arrête-le. Si elle persiste, consulte un professionnel de santé : l'application ne peut pas établir de diagnostic."
+    },
+    "session": {
+      "runningLead": "Note la charge et les répétitions de chaque série, puis valide-la.",
+      "pausedLead": "Séance en pause.",
+      "pausedNotice": "La séance est en pause : le chronomètre est arrêté. Reprends-la pour continuer.",
+      "elapsed": "Durée de la séance",
+      "pause": "Pause",
+      "resume": "Reprendre",
+      "rest": "Repos : {time}",
+      "restDone": "Repos terminé, série suivante !",
+      "restClose": "Fermer le minuteur",
+      "set": "Série",
+      "weight": "Charge",
+      "reps": "Répétitions",
+      "seconds": "Durée",
+      "repsUnit": "rép.",
+      "weightLabel": "Charge de la série {number}",
+      "repsLabel": "Répétitions de la série {number}",
+      "secondsLabel": "Durée de la série {number}",
+      "validateSet": "Valider la série {number}",
+      "updateSet": "Corriger la série {number}",
+      "addSet": "Ajouter une série",
+      "removeSet": "Retirer une série",
+      "previous": "La dernière fois : {sets}",
+      "setWeighted": "{weight} kg × {reps}",
+      "setBodyweight": "{reps} rép.",
+      "setTimed": "{seconds} s",
+      "suggestFirst": "Première fois : choisis une charge qui laisse 2 ou 3 répétitions en réserve.",
+      "suggestWeighted": "Objectif du jour : {weight} kg × {reps}",
+      "suggestWeightUp": "Objectif du jour : {weight} kg × {reps} (charge augmentée)",
+      "suggestReps": "Objectif du jour : {reps} répétitions",
+      "suggestSeconds": "Objectif du jour : {reps} s",
+      "suggestHarder": "Haut de la fourchette atteint : passe à une variante plus difficile.",
+      "finishTitle": "Terminer la séance",
+      "finishHint": "Les séries non validées ne seront pas enregistrées.",
+      "effort": "Difficulté ressentie (facultatif)",
+      "effortHint": "1 : très facile · 10 : effort maximal.",
+      "finish": "Terminer la séance",
+      "finishing": "Enregistrement…",
+      "discard": "Abandonner la séance",
+      "discardConfirm": "Abandonner sans enregistrer",
+      "duration": "Durée",
+      "setsDone": "Séries",
+      "volume": "Volume",
+      "effortShort": "Ressenti",
+      "noSet": "Aucune série validée.",
+      "better": "Force estimée en hausse de {value} kg",
+      "worse": "Force estimée en baisse de {value} kg",
+      "same": "Force estimée identique"
+    },
+    "history": {
+      "title": "Historique",
+      "lead": "Tes séances terminées et l'évolution de chaque exercice.",
+      "empty": "Aucune séance terminée pour l'instant.",
+      "sessions": "Séances",
+      "exercises": "Exercices",
+      "minutes": "{count} min",
+      "sets": "{count, plural, one {# série} other {# séries}}",
+      "exerciseLine": "{count, plural, one {# séance} other {# séances}}, la dernière le {date}"
+    },
+    "exercise": {
+      "caution": "Déconseillé en cas de gêne : {areas}.",
+      "progress": "Progression",
+      "progressWeighted": "Force estimée de ta meilleure série (formule d'Epley), séance après séance.",
+      "progressReps": "Meilleure série de chaque séance.",
+      "seriesWeighted": "Force estimée",
+      "seriesReps": "Meilleure série",
+      "repsUnit": "rép.",
+      "chartDescription": "Évolution sur {count} séances.",
+      "notEnough": "Le graphique apparaîtra après deux séances avec cet exercice.",
+      "table": "Voir le détail des séries",
+      "date": "Séance",
+      "sets": "Séries",
+      "oneRepMax": "Force estimée"
+    },
+    "manualProgram": "Mes séances",
+    "libraryLink": "Bibliothèque",
+    "weekNav": {
+      "previous": "Semaine précédente",
+      "next": "Semaine suivante",
+      "current": "Revenir à cette semaine",
+      "range": "Semaine du {from} au {to}"
+    },
+    "entry": {
+      "done": "Faite",
+      "active": "En cours",
+      "planned": "Planifiée",
+      "moved": "Déplacée — prévue {day}",
+      "added": "Ajoutée",
+      "skipped": "Sautée",
+      "missed": "Non faite",
+      "organize": "Organiser",
+      "organizeLabel": "Organiser « {name} » du {date}",
+      "doNow": "La faire maintenant",
+      "restore": "Rétablir",
+      "addOnDay": "Ajouter une séance le {date}",
+      "view": "Voir"
+    },
+    "onDemand": {
+      "title": "Séances à la demande",
+      "lead": "Sans jour fixe : lance-les quand tu veux ou planifie-les à une date."
+    },
+    "manage": {
+      "title": "Composer mes séances",
+      "lead": "Crée tes propres séances à partir de la bibliothèque d'exercices.",
+      "newWorkout": "Créer une séance",
+      "library": "Bibliothèque d'exercices"
+    },
+    "plan": {
+      "title": "Organiser la séance",
+      "scheduledOn": "Prévue le {date}",
+      "movedFrom": "Déplacée au {date} — initialement prévue le {original}",
+      "plannedOn": "Planifiée le {date}",
+      "skippedOn": "Sautée le {date}",
+      "moveTitle": "Déplacer cette fois",
+      "moveLead": "Seule cette date change : la séance garde son jour habituel les autres semaines.",
+      "rescheduleTitle": "Changer la date",
+      "moveTo": "Déplacer au {date}",
+      "otherDate": "Autre date",
+      "move": "Déplacer",
+      "moving": "Déplacement…",
+      "skip": "Sauter cette fois",
+      "skipping": "…",
+      "restore": "Remettre à sa date d'origine",
+      "restoreSkipped": "Rétablir la séance",
+      "remove": "Retirer du planning",
+      "removing": "…",
+      "habitTitle": "Jour habituel",
+      "habitLead": "S'applique à toutes les semaines.",
+      "onDemand": "À la demande",
+      "setHabit": "Toutes les semaines le {day}",
+      "setOnDemand": "Sans jour fixe (à la demande)",
+      "edit": "Modifier les exercices",
+      "startNow": "Démarrer maintenant",
+      "missingWorkout": "La séance type a été supprimée.",
+      "otherActions": "Autres actions"
+    },
+    "planNew": {
+      "title": "Ajouter une séance",
+      "lead": "Le {date}. La séance s'ajoute ce jour-là, sans changer ton rythme habituel.",
+      "plan": "Planifier ce jour-là",
+      "planLabel": "Planifier « {name} » le {date}",
+      "planning": "Ajout…",
+      "none": "Aucune séance type pour l'instant.",
+      "create": "Créer une nouvelle séance",
+      "emptyWorkout": "Vide : ajoute d'abord des exercices"
+    },
+    "workoutForm": {
+      "createTitle": "Nouvelle séance",
+      "createLead": "Donne-lui un nom et un jour ; tu choisiras ensuite les exercices dans la bibliothèque.",
+      "name": "Nom de la séance",
+      "namePlaceholder": "Ex. : Dos et biceps",
+      "weekday": "Jour habituel",
+      "onDemand": "À la demande (sans jour fixe)",
+      "create": "Créer et choisir les exercices",
+      "creating": "Création…",
+      "save": "Enregistrer",
+      "saved": "Enregistré.",
+      "settings": "Renommer la séance",
+      "delete": "Supprimer la séance",
+      "deleteConfirm": "Confirmer la suppression",
+      "deleting": "Suppression…",
+      "deleteHint": "Les séances déjà faites restent dans ton historique."
+    },
+    "addExercise": "Ajouter un exercice",
+    "emptyWorkout": "Cette séance ne contient encore aucun exercice.",
+    "moveUp": "Monter « {name} »",
+    "moveDown": "Descendre « {name} »",
+    "removeExercise": "Retirer « {name} » de la séance",
+    "removing": "Retrait…",
+    "prescription": {
+      "title": "Séries, répétitions et repos",
+      "sets": "Séries",
+      "repMin": "Répétitions min.",
+      "repMax": "Répétitions max.",
+      "secondsMin": "Durée min.",
+      "secondsMax": "Durée max.",
+      "rest": "Repos",
+      "unitSets": "séries",
+      "unitReps": "rép.",
+      "unitSeconds": "s",
+      "save": "Enregistrer",
+      "saved": "Enregistré."
+    },
+    "browser": {
+      "search": "Rechercher",
+      "searchPlaceholder": "Ex. : développé, squat…",
+      "muscle": "Muscle principal",
+      "allMuscles": "Tous les muscles",
+      "mine": "Seulement avec mon matériel",
+      "filter": "Filtrer",
+      "reset": "Effacer les filtres",
+      "results": "{count, plural, =0 {Aucun exercice} one {# exercice} other {# exercices}}",
+      "noResults": "Aucun exercice ne correspond. Élargis la recherche ou crée ton propre exercice.",
+      "add": "Ajouter",
+      "adding": "Ajout…",
+      "added": "Dans la séance",
+      "addLabel": "Ajouter « {name} » à la séance",
+      "own": "Perso",
+      "cautionWarning": "Sollicite une zone signalée : {areas}",
+      "levelWarning": "Niveau {level}, au-dessus du tien",
+      "equipmentWarning": "Matériel non déclaré",
+      "details": "Fiche et progression"
+    },
+    "addPage": {
+      "title": "Ajouter des exercices",
+      "lead": "À « {name} ». Ajoute-en autant que tu veux, puis termine.",
+      "done": "Terminer",
+      "count": "{count, plural, =0 {Aucun exercice dans la séance} one {# exercice dans la séance} other {# exercices dans la séance}}",
+      "createOwn": "Créer un exercice"
+    },
+    "libraryPage": {
+      "title": "Bibliothèque d'exercices",
+      "lead": "Recherche un exercice, regarde le mouvement, suis ta progression.",
+      "createOwn": "Créer un exercice"
+    },
+    "ownExercise": {
+      "createTitle": "Nouvel exercice",
+      "createLead": "Un exercice qui manque à la bibliothèque. Il n'est visible que par toi et n'est jamais proposé automatiquement.",
+      "editTitle": "Modifier l'exercice",
+      "name": "Nom",
+      "primary": "Muscle principal",
+      "equipment": "Matériel nécessaire",
+      "equipmentHint": "Rien de coché : poids du corps.",
+      "kind": "Mesure",
+      "reps": "En répétitions",
+      "timed": "En secondes (gainage, tenue…)",
+      "instructions": "Consignes",
+      "instructionsHint": "Facultatif : position, mouvement, points de vigilance.",
+      "create": "Créer l'exercice",
+      "createAndAdd": "Créer et ajouter à la séance",
+      "creating": "Création…",
+      "save": "Enregistrer",
+      "saving": "Enregistrement…",
+      "edit": "Modifier",
+      "delete": "Supprimer l'exercice",
+      "deleteConfirm": "Confirmer la suppression",
+      "deleting": "Suppression…",
+      "badge": "Exercice perso"
+    },
+    "demo": {
+      "show": "Voir le mouvement",
+      "hide": "Masquer le mouvement",
+      "video": "Vidéo de démonstration",
+      "newTab": "(YouTube, nouvel onglet)",
+      "start": "Départ",
+      "end": "Arrivée",
+      "alt": "{name}, position de {position}",
+      "play": "Lecture",
+      "pause": "Pause",
+      "credit": "Photos : Free Exercise DB (domaine public). La vidéo s'ouvre sur YouTube."
+    }
+  }
+}
