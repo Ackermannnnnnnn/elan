@@ -125,3 +125,39 @@ describe("cohérence d'une étiquette", () => {
     ).toBe(true);
   });
 });
+
+describe("portions proposées", () => {
+  it("canette de 33 cl : toute la canette, la moitié, 100 ml", async () => {
+    const { portionChoices } = await import("./nutrition");
+    expect(portionChoices({ basis: "100ml", servingSizeG: 330, packageSizeG: 330 })).toEqual([
+      { kind: "package", grams: 330 },
+      { kind: "halfPackage", grams: 165 },
+      { kind: "hundred", grams: 100 },
+    ]);
+  });
+  it("paquet de 400 g, portion de 30 g : emballage, moitié, portion, demi, double, 100 g", async () => {
+    const { portionChoices } = await import("./nutrition");
+    expect(
+      portionChoices({ basis: "100g", servingSizeG: 30, packageSizeG: 400 }).map((c) => [
+        c.kind,
+        c.grams,
+      ]),
+    ).toEqual([
+      ["package", 400],
+      ["halfPackage", 200],
+      ["serving", 30],
+      ["halfServing", 15],
+      ["twoServings", 60],
+      ["hundred", 100],
+    ]);
+  });
+  it("boisson sans emballage connu : verre, canette, bouteille ; aliment nu : 100 g", async () => {
+    const { portionChoices } = await import("./nutrition");
+    expect(
+      portionChoices({ basis: "100ml", servingSizeG: null, packageSizeG: null }).map((c) => c.kind),
+    ).toEqual(["glass", "can", "bottle", "hundred"]);
+    expect(portionChoices({ basis: "100g", servingSizeG: null, packageSizeG: null })).toEqual([
+      { kind: "hundred", grams: 100 },
+    ]);
+  });
+});

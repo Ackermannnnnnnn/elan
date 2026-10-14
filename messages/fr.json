@@ -320,7 +320,7 @@
     },
     "goalType": {
       "fat_loss": {
-        "label": "Perdre de la graisse",
+        "label": "Perdre du poids",
         "description": "Un déficit calorique modéré, en préservant le muscle."
       },
       "maintenance": {
@@ -332,8 +332,8 @@
         "description": "Un léger surplus calorique, avec de la musculation."
       },
       "recomposition": {
-        "label": "Recomposition corporelle",
-        "description": "Perdre un peu de graisse tout en gagnant du muscle, lentement."
+        "label": "Perdre du poids et prendre du muscle",
+        "description": "Une perte de poids plus douce, beaucoup de protéines et de la musculation : tu perds surtout de la graisse tout en gagnant du muscle."
       },
       "fitness": {
         "label": "Améliorer ma forme",
@@ -589,7 +589,7 @@
         "bmi_high": "Avec un IMC de 35 ou plus, un accompagnement médical rend la perte de poids plus sûre et plus efficace. Parles-en à ton médecin.",
         "large_loss": "Tu vises une perte de plus de 20 % de ton poids. C'est un projet de longue durée : un suivi par un professionnel de santé est recommandé.",
         "senior": "À partir de 65 ans, préserver la masse musculaire est prioritaire. Demande l'avis de ton médecin avant de réduire tes apports.",
-        "low_bmi_loss": "Ton IMC est déjà dans le bas de la zone normale. Une perte de poids supplémentaire offre peu de bénéfices : la recomposition corporelle est souvent plus adaptée.",
+        "low_bmi_loss": "Ton IMC est déjà dans le bas de la zone normale. Une perte de poids supplémentaire offre peu de bénéfices : vise plutôt le maintien avec de la musculation.",
         "low_maintenance": "Tes besoins estimés sont déjà bas. Réduire davantage tes apports demande l'avis d'un professionnel de santé."
       },
       "strategyTitle": "Par où commencer",
@@ -597,7 +597,7 @@
       "strategyAllergies": "{count, plural, one {Ton allergie est enregistrée} other {Tes # allergies sont enregistrées}} comme interdiction stricte.",
       "strategyTracking": "Pèse-toi régulièrement, toujours dans les mêmes conditions : c'est la tendance sur plusieurs semaines qui compte, pas la mesure du jour.",
       "trainingTitle": "Côté entraînement",
-      "trainingDetail": "Le programme détaillé arrivera avec le module Entraînement.",
+      "trainingDetail": "Ton programme se crée dans l'onglet Entraînement : généré pour toi, ou composé à partir de la bibliothèque d'exercices.",
       "assumptionsTitle": "Comment ces chiffres sont calculés",
       "assumptions": {
         "bmr": "Métabolisme de base : formule de Mifflin-St Jeor, à partir de ton poids ({weight} kg), de ta taille ({height} cm) et de ton âge ({age} ans).",
@@ -757,7 +757,18 @@
       "changeRecipe": "Choisir une autre recette",
       "noRecipes": "Tu n'as pas encore de recette.",
       "goRecipes": "Voir les recettes",
-      "chooseRecipe": "Choisir {name}"
+      "chooseRecipe": "Choisir {name}",
+      "portion": {
+        "title": "Combien ?",
+        "package": "Tout l'emballage ({amount})",
+        "halfPackage": "La moitié ({amount})",
+        "serving": "1 portion ({amount})",
+        "halfServing": "½ portion ({amount})",
+        "twoServings": "2 portions ({amount})",
+        "glass": "1 verre (20 cl)",
+        "can": "1 canette (33 cl)",
+        "bottle": "1 bouteille (50 cl)"
+      }
     },
     "quick": {
       "lead": "Pour un plat dont tu connais les valeurs sans vouloir créer d'aliment.",
@@ -874,18 +885,21 @@
   "Foods": {
     "scan": {
       "title": "Scanner un produit",
-      "lead": "Saisis ou scanne le code-barres d'un produit emballé : ses valeurs nutritionnelles sont récupérées sur Open Food Facts.",
+      "lead": "Scanne le code-barres d'un produit emballé (ou saisis-le) : ses valeurs nutritionnelles sont récupérées sur Open Food Facts.",
       "back": "Retour",
       "barcode": "Code-barres",
       "barcodeHint": "Les 8 à 14 chiffres sous les barres.",
-      "useCamera": "Utiliser la caméra",
+      "useCamera": "Scanner avec la caméra",
       "stopCamera": "Arrêter la caméra",
       "cameraLabel": "Image de la caméra",
       "cameraError": "La caméra n'est pas accessible. Autorise-la dans ton navigateur, ou saisis le code à la main.",
       "submit": "Rechercher le produit",
       "searching": "Recherche…",
       "createInstead": "Créer l'aliment à la main",
-      "attribution": "Données Open Food Facts (licence ODbL), saisies par une communauté de bénévoles : vérifie-les avec l'étiquette. Le produit est enregistré dans tes aliments, visible par toi seul."
+      "attribution": "Données Open Food Facts (licence ODbL), saisies par une communauté de bénévoles : vérifie-les avec l'étiquette. Le produit est enregistré dans tes aliments, visible par toi seul.",
+      "aim": "Place le code-barres dans le cadre, bien à plat et éclairé.",
+      "preparing": "Ouverture de la caméra…",
+      "noCamera": "La caméra n'est pas disponible dans ce navigateur : saisis le code à la main."
     }
   },
   "Recipes": {
@@ -1175,7 +1189,7 @@
     },
     "empty": {
       "title": "Crée ton programme",
-      "lead": "Quelques questions, et le programme est construit à partir d'une bibliothèque de 68 exercices.",
+      "lead": "Quelques questions, et le programme est construit à partir d'une bibliothèque de 121 exercices.",
       "point1": "Adapté à ton matériel, à ton niveau et au temps dont tu disposes.",
       "point2": "Aucun exercice risqué pour une zone que tu déclares sensible.",
       "point3": "Chaque exercice peut être remplacé, chaque séance déplacée.",
@@ -1311,7 +1325,13 @@
       "chained": "Enchaîné sans repos",
       "stopExercise": "Arrêter cet exercice",
       "skipExercise": "Passer cet exercice",
-      "addExercise": "Ajouter un exercice"
+      "addExercise": "Ajouter un exercice",
+      "exerciseDone": "✓ {count, plural, one {# série faite} other {# séries faites}}",
+      "progress": "{done}/{total} séries",
+      "goalWeighted": "Objectif : {weight} kg × {reps}",
+      "goalReps": "Objectif : {reps} répétitions",
+      "goalSeconds": "Objectif : {reps} s",
+      "history": "Historique"
     },
     "history": {
       "title": "Historique",
@@ -1447,7 +1467,8 @@
       "unitReps": "rép.",
       "unitSeconds": "s",
       "save": "Enregistrer",
-      "saved": "Enregistré."
+      "saved": "Enregistré.",
+      "titleShort": "Répétitions et réglages détaillés"
     },
     "browser": {
       "search": "Rechercher",
@@ -1543,6 +1564,33 @@
       "title": "Ajouter un exercice",
       "lead": "Il s'ajoute à la fin de la séance, avec des séries vides.",
       "back": "Retour à la séance"
+    },
+    "rest": {
+      "label": "Repos {value}",
+      "change": "Changer le repos de « {name} » (actuellement {value})",
+      "choose": "Temps de repos",
+      "none": "Aucun"
+    },
+    "quickMove": {
+      "move": "Déplacer",
+      "open": "Déplacer « {name} »",
+      "choose": "Nouveau jour pour « {name} »",
+      "to": "Déplacer « {name} » au {date}",
+      "other": "Autre date…"
     }
+  },
+  "Bmi": {
+    "title": "IMC (indice de masse corporelle)",
+    "category": {
+      "underweight": "Insuffisance pondérale",
+      "normal": "Corpulence normale",
+      "overweight": "Surpoids",
+      "obesity_1": "Obésité modérée",
+      "obesity_2": "Obésité sévère",
+      "obesity_3": "Obésité massive"
+    },
+    "range": "Pour ta taille, un IMC de 18,5 à 24,9 correspond à {min} – {max} kg.",
+    "limits": "L'IMC (poids ÷ taille²) ne distingue pas le muscle de la graisse : chez une personne musclée, il surestime la corpulence. Ton tour de taille et l'évolution de tes mensurations complètent ce repère.",
+    "short": "IMC {value} · {category}"
   }
 }

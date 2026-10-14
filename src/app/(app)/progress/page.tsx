@@ -7,9 +7,10 @@ import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/ca
 import { Meter } from "@/components/ui/meter";
 import { SegmentedLinks } from "@/components/ui/segmented-links";
 import { Stat, StatGrid } from "@/components/ui/stat";
+import { BmiCard } from "@/features/tracking/bmi-card";
 import { ROUTES } from "@/config/routes";
 import { getActiveGoal, getTargetsOn, listGoalHistory } from "@/data/plan";
-import { getToday } from "@/data/profile";
+import { getOwnProfile, getToday } from "@/data/profile";
 import { listMeasurements, listWeights } from "@/data/tracking";
 import { shouldRecalculate } from "@/domain/energy";
 import {
@@ -39,16 +40,18 @@ export default async function ProgressPage({ searchParams }: PageProps<"/progres
   const range: RangeKey = isRange(params.range) ? params.range : "30";
 
   const today = await getToday();
-  const [weights, goal, targets, measurements, goals, t, tOptions, format] = await Promise.all([
-    listWeights(),
-    getActiveGoal(),
-    getTargetsOn(today),
-    listMeasurements(),
-    listGoalHistory(),
-    getTranslations("Progress"),
-    getTranslations("Options"),
-    getFormatter(),
-  ]);
+  const [weights, goal, targets, measurements, goals, profile, t, tOptions, format] =
+    await Promise.all([
+      listWeights(),
+      getActiveGoal(),
+      getTargetsOn(today),
+      listMeasurements(),
+      listGoalHistory(),
+      getOwnProfile(),
+      getTranslations("Progress"),
+      getTranslations("Options"),
+      getFormatter(),
+    ]);
 
   const kg = (value: number, digits = 1) =>
     format.number(value, { minimumFractionDigits: digits, maximumFractionDigits: digits });
@@ -141,6 +144,9 @@ export default async function ProgressPage({ searchParams }: PageProps<"/progres
               }
             />
           </StatGrid>
+        ) : null}
+        {latest && profile?.height_cm ? (
+          <BmiCard weightKg={latest.weightKg} heightCm={profile.height_cm} />
         ) : null}
 
         {latest ? (

@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import type { CautionArea, Equipment, Level, Muscle, Pattern } from "@/domain/exercise-catalog";
 import { type ReplacementFilters, findReplacements } from "@/domain/exercise-replacement";
 import { type LoggedSet, type Suggestion, suggestNext } from "@/domain/progression";
@@ -63,7 +64,11 @@ export function toLibraryExercise(exercise: Exercise): LibraryExercise {
   };
 }
 
-export async function listExercises(): Promise<Exercise[]> {
+/**
+ * Bibliothèque visible par l'utilisateur (référence + exercices personnels).
+ * Mise en cache le temps d'une requête : plusieurs fonctions en ont besoin.
+ */
+export const listExercises = cache(async (): Promise<Exercise[]> => {
   const { supabase } = await getDb();
   const { data, error } = await supabase
     .from("exercise_library")
@@ -72,7 +77,7 @@ export async function listExercises(): Promise<Exercise[]> {
     .limit(1000);
   if (error) fail("listExercises", error);
   return data;
-}
+});
 
 export async function getExercise(id: string): Promise<Exercise | null> {
   const { supabase } = await getDb();
@@ -630,6 +635,19 @@ export async function moveWorkoutExercise(itemId: string, direction: -1 | 1): Pr
 }
 
 /** Séries, répétitions (ou secondes) et repos d'un exercice de séance. */
+/** Temps de repos d'un exercice de la séance type. */
+export async function setWorkoutRest(itemId: string, seconds: number): Promise<void> {
+  const { supabase, user } = await getDb();
+  const item = await getWorkoutExercise(itemId);
+  const { error } = await supabase
+    .from("workout_exercises")
+    .update({ rest_seconds: seconds })
+    .eq("id", item.id)
+    .eq("user_id", user.id);
+  if (error) fail("setWorkoutRest", error, "saveFailed");
+  await refreshWorkoutMinutes(item.workout_id);
+}
+
 /** Enchaîne (superset) ou sépare un exercice de la séance type et le suivant. */
 export async function setWorkoutSuperset(itemId: string, linked: boolean): Promise<void> {
   const { supabase, user } = await getDb();
@@ -876,74 +894,22 @@ export async function startSession(
   today: IsoDate,
   from: { occurrence?: IsoDate; plannedId?: string } = {},
 ): Promise<string> {
-  const active = await getActiveSession();
-  if (active) return active.id;
-
-  const { supabase, user } = await getDb();
-  const found = await getWorkout(workoutId);
-  if (!found) throw new DataError("itemNotFound");
-  const { workout } = found;
-  if (workout.exercises.length === 0) throw new DataError("emptyWorkout");
-
-  const start = {
-    name: workout.name,
-    scheduled_on: today,
-    status: "in_progress" as const,
-    started_at: new Date().toISOString(),
-  };
-  let sessionId: string;
-  if (from.plannedId) {
-    const { data, error } = await supabase
-      .from("workout_sessions")
-      .update(start)
-      .eq("id", from.plannedId)
-      .eq("user_id", user.id)
-      .eq("workout_id", workout.id)
-      .eq("status", "planned")
-      .select("id");
-    if (error) fail("startSession.planned", error, "saveFailed");
-    const row = data[0];
-    if (!row) throw new DataError("itemNotFound");
-    sessionId = row.id;
-  } else {
-    const occurrence =
-      from.occurrence && workout.weekday === isoWeekday(from.occurrence) ? from.occurrence : null;
-    const { data, error } = await supabase
-      .from("workout_sessions")
-      .insert({ user_id: user.id, workout_id: workout.id, original_date: occurrence, ...start })
-      .select("id")
-      .single();
-    if (error) fail("startSession", error, "saveFailed");
-    sessionId = data.id;
-  }
-
-  try {
-    await createSessionPlan(
-      sessionId,
-      workout.exercises.map((item) => ({
-        exerciseId: item.exercise_id,
-        sets: item.target_sets,
-        repMin: item.rep_min,
-        repMax: item.rep_max,
-        restSeconds: item.rest_seconds,
-        supersetWithNext: item.superset_with_next,
-      })),
-    );
-  } catch (error) {
-    if (from.plannedId) {
-      await supabase
-        .from("workout_sessions")
-        .update({ status: "planned", started_at: null })
-        .eq("id", sessionId)
-        .eq("user_id", user.id);
-      await supabase.from("session_exercises").delete().eq("session_id", sessionId);
-      await supabase.from("workout_sets").delete().eq("session_id", sessionId);
-    } else {
-      await supabase.from("workout_sessions").delete().eq("id", sessionId).eq("user_id", user.id);
+  const { supabase } = await getDb();
+  // Tout se fait en base, en une transaction (voir la migration start_session).
+  const { data, error } = await supabase.rpc("start_session", {
+    p_workout_id: workoutId,
+    p_today: today,
+    ...(from.occurrence ? { p_occurrence: from.occurrence } : {}),
+    ...(from.plannedId ? { p_planned_id: from.plannedId } : {}),
+  });
+  if (error) {
+    if (error.code === "P0002") throw new DataError("itemNotFound");
+    if (error.code === "P0001" && error.message === "emptyWorkout") {
+      throw new DataError("emptyWorkout");
     }
-    throw error;
+    fail("startSession", error, "saveFailed");
   }
-  return sessionId;
+  return data;
 }
 
 /** Séance libre : aucun exercice prévu, on les ajoute au fil de la séance. */
@@ -1642,6 +1608,32 @@ export async function setSessionSuperset(itemId: string, linked: boolean): Promi
     .eq("id", item.id)
     .eq("user_id", user.id);
   if (error) fail("setSessionSuperset", error, "saveFailed");
+  return session.id;
+}
+
+/**
+ * Temps de repos d'un exercice de la séance en cours. Il est aussi enregistré
+ * dans la séance type, pour les prochaines fois.
+ */
+export async function setSessionRest(itemId: string, seconds: number): Promise<string> {
+  const { supabase, user } = await getDb();
+  const { item, session } = await getSessionItem(itemId);
+  const { error } = await supabase
+    .from("session_exercises")
+    .update({ rest_seconds: seconds })
+    .eq("id", item.id)
+    .eq("user_id", user.id);
+  if (error) fail("setSessionRest", error, "saveFailed");
+  if (session.workout_id) {
+    const { error: templateError } = await supabase
+      .from("workout_exercises")
+      .update({ rest_seconds: seconds })
+      .eq("user_id", user.id)
+      .eq("workout_id", session.workout_id)
+      .eq("exercise_id", item.exercise_id);
+    if (templateError) fail("setSessionRest.template", templateError, "saveFailed");
+    await refreshWorkoutMinutes(session.workout_id);
+  }
   return session.id;
 }
 

@@ -8,7 +8,7 @@ Dernière mise à jour : 13 octobre 2026, phase 5 complétée (séances sur mesu
 | --------------------------------------- | --------------------------------------- |
 | TypeScript strict (`npm run typecheck`) | Aucune erreur                           |
 | ESLint (`npm run lint`)                 | Aucune erreur, aucun avertissement      |
-| Tests (`npm test`)                      | 301 tests réussis                       |
+| Tests (`npm test`)                      | 309 tests réussis                       |
 | Build de production (`npm run build`)   | Réussi, avec et sans variables Supabase |
 
 Ce que couvrent les tests :
@@ -97,6 +97,23 @@ API REST) adossée à un vrai PostgreSQL où les migrations du projet sont
 appliquées : la RLS, les déclencheurs et les contraintes sont donc réels. La
 doublure n'est pas livrée avec le projet. La phase 2 a par ailleurs été
 validée sur un vrai projet Supabase (inscription, e-mail, profil, déconnexion).
+
+## Retours de Moh du 14 octobre (30 étapes, ordinateur et mobile)
+
+- **Objectif** « perdre du poids et prendre du muscle » choisi à l'inscription
+  (poids visé obligatoire, rythme), enregistré ; IMC affiché (25,2, surpoids,
+  59,0 – 78,5 kg pour 1,78 m).
+- **Scan par la caméra** : Chromium reçoit une fausse caméra filmant un vrai
+  code EAN-13 ; sans lecteur intégré, c'est le décodeur libre (ZXing, servi
+  par l'application) qui lit le code ; produit importé d'un faux Open Food
+  Facts (canette de 33 cl), boutons « Tout l'emballage (33 cl) » et « La
+  moitié (165 ml) », 165 ml enregistrés, aliment « pour 100 ml ».
+- **Entraînement** : repos choisi en deux gestes (séance type et en pleine
+  séance, repris par le minuteur), séance déplacée depuis la semaine en deux
+  gestes, recherche par autres noms (« kickback »…).
+- **Rapidité** mesurée avec 90 ms de délai simulé par requête vers la base
+  (application et base sur deux continents) : séance affichée 1,3 s après
+  « Démarrer » ; série validée et minuteur visibles en 0,2 s.
 
 ## Séance à la salle et imprévus (12 parcours × 3)
 

@@ -100,12 +100,18 @@ export default async function AddEntryPage({ searchParams }: PageProps<"/nutriti
               fiberG: selected.fiber_g,
               servingSizeG: selected.serving_size_g,
               servingLabel: selected.serving_label,
+              packageSizeG: selected.package_size_g,
+              packageLabel: selected.package_label,
             }}
             initial={{
               unit: "grams",
-              quantity: selected.serving_size_g
-                ? String(selected.serving_size_g).replace(".", ",")
-                : "100",
+              // La portion indiquée, sinon un petit emballage entier (canette), sinon 100.
+              quantity: String(
+                selected.serving_size_g ??
+                  (selected.package_size_g && selected.package_size_g <= 500
+                    ? selected.package_size_g
+                    : 100),
+              ).replace(".", ","),
             }}
             submitLabel={t("add.submit")}
             action={addFoodEntryAction.bind(null, slot, selected.id)}

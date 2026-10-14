@@ -15,7 +15,8 @@ export function GoalStep({ blocking }: { blocking: BlockingIssue[] }) {
   const { register, control } = useFormContext<OnboardingFormValues>();
   const goalType = useWatch({ control, name: "goalType" });
 
-  const hasPace = goalType === "fat_loss" || goalType === "muscle_gain";
+  const hasPace =
+    goalType === "fat_loss" || goalType === "recomposition" || goalType === "muscle_gain";
   const paceKind = goalType === "muscle_gain" ? "gain" : "loss";
   const formatKg = (value: number) => value.toLocaleString("fr-BE", { maximumFractionDigits: 1 });
 

@@ -99,3 +99,58 @@ export function labelLooksConsistent(food: FoodPer100): boolean {
   if (food.kcal < 20 && computed < 20) return true;
   return Math.abs(computed - food.kcal) <= Math.max(25, food.kcal * 0.25);
 }
+
+// --- Portions proposées --------------------------------------------------------------
+
+export type PortionKind =
+  | "package"
+  | "halfPackage"
+  | "serving"
+  | "halfServing"
+  | "twoServings"
+  | "glass"
+  | "can"
+  | "bottle"
+  | "hundred";
+
+export type PortionChoice = { kind: PortionKind; grams: number };
+
+/**
+ * Portions proposées en un geste pour un aliment : l'emballage entier et sa
+ * moitié, la portion indiquée (et sa moitié, le double), des contenants
+ * courants pour une boisson sans emballage connu, et toujours 100 g (ou ml).
+ * Quantités en grammes (ou millilitres), arrondies au dixième, sans doublon.
+ */
+export function portionChoices(food: {
+  basis: "100g" | "100ml";
+  servingSizeG: number | null;
+  packageSizeG: number | null;
+}): PortionChoice[] {
+  const choices: PortionChoice[] = [];
+  const add = (kind: PortionKind, grams: number | null) => {
+    if (grams === null || !(grams > 0) || grams > 10000) return;
+    const value = round1(grams);
+    if (choices.some((choice) => choice.grams === value)) return;
+    choices.push({ kind, grams: value });
+  };
+  const { servingSizeG: serving, packageSizeG: pack } = food;
+  if (pack) {
+    add("package", pack);
+    add("halfPackage", pack / 2);
+  }
+  if (serving) {
+    add("serving", serving);
+    // La moitié ou le double n'ont de sens que si la portion est plus petite que l'emballage.
+    if (!pack || serving < pack) {
+      add("halfServing", serving / 2);
+      if (!pack || serving * 2 <= pack) add("twoServings", serving * 2);
+    }
+  }
+  if (food.basis === "100ml" && !pack) {
+    add("glass", 200);
+    add("can", 330);
+    add("bottle", 500);
+  }
+  add("hundred", 100);
+  return choices;
+}

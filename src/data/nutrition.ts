@@ -28,6 +28,8 @@ export type Food = Pick<
   | "fiber_g"
   | "serving_size_g"
   | "serving_label"
+  | "package_size_g"
+  | "package_label"
   | "source_ref"
   | "allergens"
   | "diet_class"
@@ -35,7 +37,7 @@ export type Food = Pick<
 >;
 
 const FOOD_COLUMNS =
-  "id, owner_id, source, data_quality, name, brand, basis, preparation_state, kcal, protein_g, carbs_g, fat_g, fiber_g, serving_size_g, serving_label, source_ref, allergens, diet_class, aisle" as const;
+  "id, owner_id, source, data_quality, name, brand, basis, preparation_state, kcal, protein_g, carbs_g, fat_g, fiber_g, serving_size_g, serving_label, package_size_g, package_label, source_ref, allergens, diet_class, aisle" as const;
 
 const pickFood = (row: Food): Food => ({
   id: row.id,
@@ -53,6 +55,8 @@ const pickFood = (row: Food): Food => ({
   fiber_g: row.fiber_g,
   serving_size_g: row.serving_size_g,
   serving_label: row.serving_label,
+  package_size_g: row.package_size_g ?? null,
+  package_label: row.package_label ?? null,
   source_ref: row.source_ref,
   allergens: row.allergens,
   diet_class: row.diet_class,
@@ -530,7 +534,7 @@ export async function saveOpenFoodFactsFood(food: OpenFoodFactsFood): Promise<st
   const columns = {
     name: food.name,
     brand: food.brand,
-    basis: "100g" as const,
+    basis: food.basis,
     preparation_state: "as_sold" as const,
     kcal: food.kcal,
     protein_g: food.proteinG,
@@ -542,6 +546,8 @@ export async function saveOpenFoodFactsFood(food: OpenFoodFactsFood): Promise<st
     salt_g: food.saltG,
     serving_size_g: food.servingSizeG,
     serving_label: food.servingLabel,
+    package_size_g: food.packageSizeG,
+    package_label: food.packageLabel,
     allergens: food.allergens,
     diet_class: food.dietClass,
     aisle: food.aisle,

@@ -9,7 +9,8 @@ import { useFormMessages } from "@/components/forms/use-form-messages";
 import { Alert } from "@/components/ui/alert";
 import { Field } from "@/components/ui/field";
 import { Select } from "@/components/ui/select";
-import { macrosForQuantity } from "@/domain/nutrition";
+import { macrosForQuantity, portionChoices } from "@/domain/nutrition";
+import { cn } from "@/lib/utils";
 import type { ActionResult } from "@/lib/action-result";
 import { quantitySchema, type QuantityFormValues } from "./schemas";
 
@@ -22,6 +23,8 @@ export type QuantityFood = {
   fiberG: number | null;
   servingSizeG: number | null;
   servingLabel: string | null;
+  packageSizeG?: number | null;
+  packageLabel?: string | null;
 };
 
 type Props = {
@@ -55,16 +58,69 @@ export function QuantityForm({ food, initial, submitLabel, action }: Props) {
 
   const baseUnit = food.basis === "100ml" ? tCommon("ml") : tCommon("grams");
   const number = (value: number) => format.number(value, { maximumFractionDigits: 1 });
+  const amount = (grams: number) => `${number(grams)} ${baseUnit}`;
+  const choices = portionChoices({
+    basis: food.basis,
+    servingSizeG: food.servingSizeG,
+    packageSizeG: food.packageSizeG ?? null,
+  });
+  const choiceLabel = (kind: (typeof choices)[number]["kind"], grams: number) => {
+    switch (kind) {
+      case "package":
+        return t("portion.package", { amount: food.packageLabel ?? amount(grams) });
+      case "halfPackage":
+        return t("portion.halfPackage", { amount: amount(grams) });
+      case "serving":
+        return t("portion.serving", { amount: food.servingLabel ?? amount(grams) });
+      case "halfServing":
+        return t("portion.halfServing", { amount: amount(grams) });
+      case "twoServings":
+        return t("portion.twoServings", { amount: amount(grams) });
+      case "hundred":
+        return amount(100);
+      default:
+        return t(`portion.${kind}`);
+    }
+  };
+  const currentGrams = unit === "grams" && parsed.success ? parsed.data.quantity : null;
 
   return (
     <FormProvider {...form}>
       <form onSubmit={onSubmit} noValidate className="flex flex-col gap-5">
+        <fieldset>
+          <legend className="mb-2 text-sm font-semibold">{t("portion.title")}</legend>
+          <div className="flex flex-wrap gap-2">
+            {choices.map((choice) => {
+              const active = currentGrams === choice.grams;
+              return (
+                <button
+                  key={choice.kind}
+                  type="button"
+                  aria-pressed={active}
+                  onClick={() => {
+                    form.setValue("unit", "grams");
+                    form.setValue("quantity", String(choice.grams).replace(".", ","), {
+                      shouldValidate: true,
+                    });
+                  }}
+                  className={cn(
+                    "inline-flex min-h-11 items-center rounded-full border px-4 text-[0.9375rem] font-medium transition-colors",
+                    active
+                      ? "border-primary bg-primary-soft text-primary-soft-foreground"
+                      : "border-border-strong bg-surface hover:border-primary/60",
+                  )}
+                >
+                  {choiceLabel(choice.kind, choice.grams)}
+                </button>
+              );
+            })}
+          </div>
+        </fieldset>
         <div className="grid gap-4 sm:grid-cols-2">
           <UnitField<QuantityFormValues>
             name="quantity"
             label={t("quantity")}
             unit={unit === "servings" ? "×" : baseUnit}
-            autoFocus
           />
           {food.servingSizeG ? (
             <Field id="unit" label={t("unit")}>

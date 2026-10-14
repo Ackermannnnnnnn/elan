@@ -88,7 +88,10 @@ export const onboardingSchema = z
   })
   .superRefine((values, context) => {
     // Un poids cible est indispensable pour perdre ou prendre du poids.
-    const needsTarget = values.goalType === "fat_loss" || values.goalType === "muscle_gain";
+    const needsTarget =
+      values.goalType === "fat_loss" ||
+      values.goalType === "recomposition" ||
+      values.goalType === "muscle_gain";
     if (needsTarget && values.targetWeightKg === null) {
       context.addIssue({ code: "custom", path: ["targetWeightKg"], message: "required" });
     }

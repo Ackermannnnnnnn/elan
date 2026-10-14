@@ -26,6 +26,7 @@ import {
   moveWorkoutExerciseAction,
   removeWorkoutExerciseAction,
   setTargetSetsAction,
+  setWorkoutRestAction,
   setWorkoutSupersetAction,
   setWorkoutWeekdayAction,
   startSessionAction,
@@ -35,6 +36,7 @@ import {
 import { demoFor } from "@/features/training/demo";
 import { MovementDemo } from "@/features/training/movement-demo";
 import { PrescriptionForm } from "@/features/training/prescription-form";
+import { RestPicker } from "@/features/training/rest-picker";
 import { addExercisesUrl, exerciseUrl, replaceUrl, sessionUrl } from "@/features/training/urls";
 import { WorkoutForm } from "@/features/training/workout-form";
 import { supersetLabels } from "@/domain/session-flow";
@@ -257,6 +259,13 @@ export default async function WorkoutPage({ params }: PageProps<"/training/worko
                     >
                       <Plus aria-hidden="true" />
                     </ActionButton>
+                  </div>
+                  <div className="mt-2 flex flex-wrap items-start gap-2">
+                    <RestPicker
+                      seconds={item.rest_seconds}
+                      exerciseName={exercise.name}
+                      action={setWorkoutRestAction.bind(null, item.id)}
+                    />
                     {index < count - 1 ? (
                       <ActionButton
                         action={setWorkoutSupersetAction.bind(
@@ -267,7 +276,6 @@ export default async function WorkoutPage({ params }: PageProps<"/training/worko
                         pendingLabel="…"
                         size="sm"
                         variant="ghost"
-                        formClassName="ml-auto"
                       >
                         {item.superset_with_next ? (
                           <Unlink aria-hidden="true" />
@@ -281,7 +289,7 @@ export default async function WorkoutPage({ params }: PageProps<"/training/worko
 
                   <details className="mt-2">
                     <summary className="cursor-pointer text-sm font-semibold text-primary">
-                      {t("prescription.title")}
+                      {t("prescription.titleShort")}
                     </summary>
                     <div className="mt-3">
                       <PrescriptionForm

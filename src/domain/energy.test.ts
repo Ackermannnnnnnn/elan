@@ -134,10 +134,15 @@ describe("objectif calorique", () => {
     expect(result.adjustments).toEqual([]);
   });
 
-  it("recomposition : 10 % sous le maintien", () => {
-    expect(calorieTarget({ ...base, goalType: "recomposition", pace: "moderate" }).targetKcal).toBe(
-      2480,
-    );
+  it("perdre du poids en prenant du muscle : rythme de perte, déficit plafonné à 20 %", () => {
+    // 0,5 % de 80 kg = 0,4 kg/sem → 440 kcal ; plafond 20 % de 2 760 = 552.
+    const moderate = calorieTarget({ ...base, goalType: "recomposition", pace: "moderate" });
+    expect(moderate.targetKcal).toBe(2320);
+    expect(moderate.adjustments).toEqual([]);
+    // Rapide : 0,6 kg/sem → 660 kcal > 552 → 2 760 − 552 = 2 208, arrondi à 2 210.
+    const fast = calorieTarget({ ...base, goalType: "recomposition", pace: "fast" });
+    expect(fast.targetKcal).toBe(2210);
+    expect(fast.adjustments).toEqual(["deficit_capped"]);
   });
 
   it("plafonne le déficit à 25 % du maintien et recalcule le rythme réel", () => {
@@ -418,5 +423,22 @@ describe("repères divers", () => {
     expect(shouldRecalculate(80, 78.1)).toBe(false);
     expect(shouldRecalculate(80, 78)).toBe(true);
     expect(shouldRecalculate(80, 82.4)).toBe(true);
+  });
+});
+
+describe("IMC", () => {
+  it("calcul, classes de l'OMS et fourchette saine", async () => {
+    const { bmi, bmiCategory, healthyWeightRange } = await import("./energy");
+    // 80 kg, 1,78 m : 80 / 3,1684 = 25,25.
+    expect(Math.round(bmi(80, 178) * 100) / 100).toBe(25.25);
+    expect(bmiCategory(18.4)).toBe("underweight");
+    expect(bmiCategory(18.5)).toBe("normal");
+    expect(bmiCategory(24.99)).toBe("normal");
+    expect(bmiCategory(25)).toBe("overweight");
+    expect(bmiCategory(32)).toBe("obesity_1");
+    expect(bmiCategory(37)).toBe("obesity_2");
+    expect(bmiCategory(41)).toBe("obesity_3");
+    // 18,5 × 3,1684 = 58,6 → 59 ; 24,9 × 3,1684 = 78,9 → 78,5.
+    expect(healthyWeightRange(178)).toEqual({ minKg: 59, maxKg: 78.5 });
   });
 });

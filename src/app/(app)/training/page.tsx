@@ -4,6 +4,7 @@ import {
   ChevronLeft,
   ChevronRight,
   History,
+  MoreHorizontal,
   Play,
   Plus,
   Settings2,
@@ -23,9 +24,12 @@ import { getActiveSession, getWeekSchedule } from "@/data/training";
 import { resolveWeekStart, type WeekEntry } from "@/domain/training-schedule";
 import {
   cancelPlannedAction,
+  moveOccurrenceAction,
+  reschedulePlannedAction,
   startFreeSessionAction,
   startSessionAction,
 } from "@/features/training/actions";
+import { QuickMove } from "@/features/training/quick-move";
 import {
   libraryUrl,
   newWorkoutUrl,
@@ -87,24 +91,58 @@ export default async function TrainingPage({ searchParams }: PageProps<"/trainin
     );
   };
 
+  const organizeHref = (entry: WeekEntry) =>
+    entry.kind === "recurring" && entry.workoutId
+      ? occurrenceUrl(entry.workoutId, entry.date)
+      : entry.sessionId
+        ? plannedUrl(entry.sessionId)
+        : null;
+
   const organizeLink = (entry: WeekEntry) => {
-    const href =
-      entry.kind === "recurring" && entry.workoutId
-        ? occurrenceUrl(entry.workoutId, entry.date)
-        : entry.sessionId
-          ? plannedUrl(entry.sessionId)
-          : null;
+    const href = organizeHref(entry);
     if (!href) return null;
     return (
-      <Button asChild variant="ghost" size="sm">
+      <Button asChild variant="ghost" size="icon">
         <Link
           href={href}
           aria-label={t("entry.organizeLabel", { name: entry.name, date: dayLabel(entry.date) })}
+          title={t("entry.organize")}
         >
-          {t("entry.organize")}
+          <MoreHorizontal aria-hidden="true" />
         </Link>
       </Button>
     );
+  };
+
+  /** Jours de la semaine affichée où déplacer la séance (à partir d'aujourd'hui). */
+  const quickMove = (entry: WeekEntry) => {
+    const href = organizeHref(entry);
+    if (!href) return null;
+    const targets = week.days
+      .filter((day) => day.date !== entry.date && day.date >= today)
+      .flatMap((day) => {
+        const action =
+          entry.kind === "recurring" && entry.workoutId
+            ? moveOccurrenceAction.bind(null, entry.workoutId, entry.date, { date: day.date })
+            : entry.kind === "planned" && entry.sessionId
+              ? reschedulePlannedAction.bind(null, entry.sessionId, { date: day.date })
+              : null;
+        return action
+          ? [
+              {
+                date: day.date,
+                short: format.dateTime(utc(day.date), {
+                  weekday: "short",
+                  day: "numeric",
+                  timeZone: "UTC",
+                }),
+                long: dayLabel(day.date),
+                action,
+              },
+            ]
+          : [];
+      });
+    return <QuickMove name={entry.name} targets={targets} moreHref={href} />;
   };
 
   const renderEntry = (entry: WeekEntry, isToday: boolean) => {
@@ -180,6 +218,7 @@ export default async function TrainingPage({ searchParams }: PageProps<"/trainin
               {t("entry.restore")}
             </ActionButton>
           ) : null}
+          {entry.kind === "recurring" || entry.kind === "planned" ? quickMove(entry) : null}
           {entry.kind === "recurring" || entry.kind === "planned" ? organizeLink(entry) : null}
         </span>
       </li>

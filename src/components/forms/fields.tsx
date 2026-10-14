@@ -79,7 +79,7 @@ export function TextField<T extends FieldValues>({
 }: BaseProps<T> &
   Pick<
     ComponentProps<"input">,
-    "type" | "placeholder" | "autoComplete" | "max" | "min" | "maxLength"
+    "type" | "placeholder" | "autoComplete" | "max" | "min" | "maxLength" | "inputMode"
   >) {
   const { register } = useFormContext<T>();
   const error = useFieldError<T>(name);

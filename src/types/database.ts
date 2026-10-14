@@ -346,6 +346,8 @@ export type Database = {
           updated_at: string;
           aisle: "produce" | "meat_fish" | "dairy_eggs" | "bakery" | "grocery" | "frozen" | "drinks" | "other";
           diet_class: "plant" | "vegetarian" | "fish" | "meat" | "unknown";
+          package_size_g: number | null;
+          package_label: string | null;
         };
         Insert: {
           id?: string;
@@ -374,6 +376,8 @@ export type Database = {
           updated_at?: string;
           aisle?: "produce" | "meat_fish" | "dairy_eggs" | "bakery" | "grocery" | "frozen" | "drinks" | "other";
           diet_class?: "plant" | "vegetarian" | "fish" | "meat" | "unknown";
+          package_size_g?: number | null;
+          package_label?: string | null;
         };
         Update: {
           id?: string;
@@ -402,6 +406,8 @@ export type Database = {
           updated_at?: string;
           aisle?: "produce" | "meat_fish" | "dairy_eggs" | "bakery" | "grocery" | "frozen" | "drinks" | "other";
           diet_class?: "plant" | "vegetarian" | "fish" | "meat" | "unknown";
+          package_size_g?: number | null;
+          package_label?: string | null;
         };
         Relationships: [];
       };
@@ -1641,6 +1647,10 @@ export type Database = {
       search_foods: {
         Args: { search: string; max_results?: number };
         Returns: Database["public"]["Tables"]["foods"]["Row"][];
+      };
+      start_session: {
+        Args: { p_workout_id: string; p_today: string; p_occurrence?: string; p_planned_id?: string };
+        Returns: string;
       };
     };
     Enums: { [_ in never]: never };

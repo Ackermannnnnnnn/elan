@@ -60,6 +60,9 @@ describe("mapOpenFoodFactsProduct", () => {
         saltG: 0.05,
         servingSizeG: 10,
         servingLabel: "10 g",
+        packageSizeG: null,
+        packageLabel: null,
+        basis: "100g",
         // Allergènes déclarés + traces + déduits du nom (« biscuit » → gluten).
         allergens: ["eggs", "gluten", "milk", "nuts", "soy"],
         dietClass: "vegetarian",
@@ -91,6 +94,33 @@ describe("mapOpenFoodFactsProduct", () => {
       ok: false,
       reason: "incomplete",
     });
+  });
+
+  it("canette : taille de l'emballage et valeurs pour 100 ml", () => {
+    const result = mapOpenFoodFactsProduct(
+      "5449000000996",
+      found({
+        ...biscuit,
+        product_name_fr: "Soda",
+        serving_quantity: 330,
+        serving_size: "330 ml",
+        product_quantity: 330,
+        product_quantity_unit: "ml",
+        quantity: "33 cl",
+      }),
+    );
+    expect(result.ok && result.food).toMatchObject({
+      basis: "100ml",
+      packageSizeG: 330,
+      packageLabel: "33 cl",
+      servingSizeG: 330,
+    });
+    // Paquet de 400 g : valeurs pour 100 g.
+    const pack = mapOpenFoodFactsProduct(
+      "1",
+      found({ ...biscuit, product_quantity: "400", quantity: "400 g" }),
+    );
+    expect(pack.ok && pack.food).toMatchObject({ basis: "100g", packageSizeG: 400 });
   });
 
   it("reconnaît un produit inconnu", () => {

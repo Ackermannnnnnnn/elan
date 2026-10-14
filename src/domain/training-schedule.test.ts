@@ -149,6 +149,10 @@ describe("bibliothèque d'exercices", () => {
       "curl-marteau",
       "curl-elastique",
       "curl-poulie",
+      "curl-incline-halteres",
+      "curl-pupitre",
+      "curl-concentre",
+      "curl-marteau-corde",
     ]);
     const bodyweight = filterExercises(list, { muscle: "chest", equipment: [] }).map((e) => e.slug);
     expect(bodyweight).toEqual(["pompes", "pompes-genoux"]);
@@ -188,5 +192,27 @@ describe("illustrations des mouvements", () => {
     expect(videoSearchUrl("Écarté à la poulie")).toBe(
       "https://www.youtube.com/results?search_query=%C3%89cart%C3%A9+%C3%A0+la+poulie+exercice+technique",
     );
+  });
+});
+
+describe("recherche par autres noms", () => {
+  it("« kickback », « pec deck », « skull crusher », « rdl » trouvent les exercices", async () => {
+    const { aliasesFor, EXERCISE_ALIASES } = await import("./exercise-aliases");
+    const list = EXERCISE_CATALOG.map((exercise) => ({
+      ...exercise,
+      aliases: aliasesFor(exercise.slug),
+    }));
+    const find = (query: string) => filterExercises(list, { query }).map((e) => e.slug);
+    expect(find("kickback")).toEqual([
+      "kickback-triceps-haltere",
+      "kickback-triceps-poulie",
+      "kickback-fessier-poulie",
+    ]);
+    expect(find("pec deck")).toContain("pec-deck");
+    expect(find("skull crusher")).toEqual(["barre-au-front"]);
+    expect(find("rdl")).toEqual(["souleve-de-terre-roumain", "souleve-de-terre-roumain-halteres"]);
+    // Chaque alias désigne un exercice qui existe.
+    const slugs = new Set(EXERCISE_CATALOG.map((exercise) => exercise.slug));
+    for (const slug of Object.keys(EXERCISE_ALIASES)) expect(slugs.has(slug), slug).toBe(true);
   });
 });

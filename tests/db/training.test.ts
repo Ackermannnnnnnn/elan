@@ -3,7 +3,7 @@ import { join } from "node:path";
 import type { PGlite } from "@electric-sql/pglite";
 import { beforeAll, describe, expect, it } from "vitest";
 import { EXERCISE_CATALOG } from "@/domain/exercise-catalog";
-import { asUser, createTestDatabase, createUser } from "./harness";
+import { asAnon, asUser, createTestDatabase, createUser } from "./harness";
 
 let db: PGlite;
 let alice: string;
@@ -317,5 +317,87 @@ describe("plan propre à chaque séance", () => {
       async (tx) => (await tx.query("select id from session_exercises")).rows.length,
     );
     expect(seenByBob).toBe(0);
+  });
+});
+
+describe("démarrer une séance (fonction start_session)", () => {
+  it("crée la séance, son plan et ses séries ; reprend la séance en cours ; cloisonne", async () => {
+    const erin = await createUser(db, "erin@example.test");
+    const workoutId = await asUser(
+      db,
+      erin,
+      async (tx) => {
+        const ids = await tx.query<{ id: string; slug: string }>(
+          "select id, slug from exercise_library where slug in ('pompes', 'curl-halteres')",
+        );
+        const program = await tx.query<{ id: string }>(
+          "insert into training_programs (name, structure, goal, sessions_per_week) values ('P', 'custom', 'general_fitness', 1) returning id",
+        );
+        const workout = await tx.query<{ id: string }>(
+          "insert into workouts (program_id, name, weekday) values ($1, 'Haut', 3) returning id",
+          [program.rows[0]?.id],
+        );
+        const id = workout.rows[0]?.id as string;
+        await tx.query(
+          "insert into workout_exercises (workout_id, exercise_id, position, target_sets, rep_min, rep_max, rest_seconds, superset_with_next) values ($1, $2, 0, 3, 8, 12, 90, true), ($1, $3, 1, 2, 10, 15, 60, false)",
+          [id, ids.rows[0]?.id, ids.rows[1]?.id],
+        );
+        return id;
+      },
+      { commit: true },
+    );
+
+    const result = await asUser(db, erin, async (tx) => {
+      // Mercredi 14 octobre 2026 : l'occurrence du mercredi est rattachée.
+      const first = await tx.query<{ id: string }>(
+        "select public.start_session($1, '2026-10-14', '2026-10-14') as id",
+        [workoutId],
+      );
+      const again = await tx.query<{ id: string }>(
+        "select public.start_session($1, '2026-10-14') as id",
+        [workoutId],
+      );
+      const sessionId = first.rows[0]?.id;
+      const session = await tx.query<{ status: string; original_date: string | null }>(
+        "select status, original_date::text from workout_sessions where id = $1",
+        [sessionId],
+      );
+      const plan = await tx.query<{
+        position: number;
+        superset_with_next: boolean;
+        rest_seconds: number;
+      }>(
+        "select position, superset_with_next, rest_seconds from session_exercises where session_id = $1 order by position",
+        [sessionId],
+      );
+      const sets = await tx.query<{ n: number }>(
+        "select count(*)::int as n from workout_sets where session_id = $1",
+        [sessionId],
+      );
+      return {
+        sameAgain: again.rows[0]?.id === sessionId,
+        session: session.rows[0],
+        plan: plan.rows,
+        sets: sets.rows[0]?.n,
+      };
+    });
+    expect(result.sameAgain).toBe(true);
+    expect(result.session).toEqual({ status: "in_progress", original_date: "2026-10-14" });
+    expect(result.plan).toEqual([
+      { position: 0, superset_with_next: true, rest_seconds: 90 },
+      { position: 1, superset_with_next: false, rest_seconds: 60 },
+    ]);
+    expect(result.sets).toBe(5);
+
+    // Un autre compte ne peut pas démarrer la séance type d'Erin.
+    await expect(
+      asUser(db, bob, (tx) =>
+        tx.query("select public.start_session($1, '2026-10-14')", [workoutId]),
+      ),
+    ).rejects.toThrow(/itemNotFound/);
+    // Un visiteur non connecté non plus.
+    await expect(
+      asAnon(db, (tx) => tx.query("select public.start_session($1, '2026-10-14')", [workoutId])),
+    ).rejects.toThrow(/permission denied/);
   });
 });

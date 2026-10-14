@@ -23,23 +23,26 @@ protégées par la Row Level Security.
 
 ## Migrations
 
-| Fichier                                | Contenu                                                                                                                                                                     |
-| -------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `…120000_foundations`                  | Extensions (`pg_trgm`, `unaccent`), schéma `private`, procédures utilitaires                                                                                                |
-| `…120100_profiles`                     | `profiles`, `user_preferences`                                                                                                                                              |
-| `…120200_goals_and_tracking`           | Objectifs, cibles nutritionnelles, poids, mensurations, photos de progression, activité, eau, habitudes, rappels, badges, bilans                                            |
-| `…120300_nutrition`                    | Aliments, catégories de repas, photos de repas, recettes, repas enregistrés, journal, plans, listes de courses                                                              |
-| `…120400_training`                     | Exercices, programmes, séances types, séances réalisées, séries                                                                                                             |
-| `…120500_ai`                           | Conversations, messages, journal d'usage                                                                                                                                    |
-| `…120600_storage`                      | Buckets privés `meal-photos` et `progress-photos`                                                                                                                           |
-| `…120700_new_user_bootstrap`           | Déclencheur d'initialisation d'un nouveau compte                                                                                                                            |
-| `…090000_foods_search_trigger_definer` | Le déclencheur de recherche des aliments ne dépend plus des droits sur le schéma `extensions`                                                                               |
-| `…140000_food_catalogue`               | Copies privées Open Food Facts, rayon et régime des aliments, fonction `search_foods`, créneaux de repas des recettes, recettes de départ, portions au quart dans les plans |
-| `…140100_ciqual_2025`                  | Catalogue partagé : 3 285 aliments CIQUAL (fichier généré, voir le README)                                                                                                  |
-| `…160000_training_programs`            | Exercices chronométrés, niveau et durée des programmes, thème des séances, une seule séance en cours par utilisateur, objectif d'entraînement                               |
-| `…160100_exercise_library`             | Bibliothèque partagée : 68 exercices (fichier généré depuis `src/domain/exercise-catalog.ts`)                                                                               |
-| `…200000_session_plan` (13/10)         | Plan propre à chaque séance (`session_exercises` : ordre, objectifs, superset, exercice remplacé, note) repris des séances existantes ; supersets des séances types         |
-| `…090000_flexible_schedule` (13/10)    | Planning souple : `workout_sessions.original_date` (occurrence déplacée, sautée ou faite un autre jour), une seule modification par occurrence, séance sautée à sa date     |
+| Fichier                                  | Contenu                                                                                                                                                                     |
+| ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `…120000_foundations`                    | Extensions (`pg_trgm`, `unaccent`), schéma `private`, procédures utilitaires                                                                                                |
+| `…120100_profiles`                       | `profiles`, `user_preferences`                                                                                                                                              |
+| `…120200_goals_and_tracking`             | Objectifs, cibles nutritionnelles, poids, mensurations, photos de progression, activité, eau, habitudes, rappels, badges, bilans                                            |
+| `…120300_nutrition`                      | Aliments, catégories de repas, photos de repas, recettes, repas enregistrés, journal, plans, listes de courses                                                              |
+| `…120400_training`                       | Exercices, programmes, séances types, séances réalisées, séries                                                                                                             |
+| `…120500_ai`                             | Conversations, messages, journal d'usage                                                                                                                                    |
+| `…120600_storage`                        | Buckets privés `meal-photos` et `progress-photos`                                                                                                                           |
+| `…120700_new_user_bootstrap`             | Déclencheur d'initialisation d'un nouveau compte                                                                                                                            |
+| `…090000_foods_search_trigger_definer`   | Le déclencheur de recherche des aliments ne dépend plus des droits sur le schéma `extensions`                                                                               |
+| `…140000_food_catalogue`                 | Copies privées Open Food Facts, rayon et régime des aliments, fonction `search_foods`, créneaux de repas des recettes, recettes de départ, portions au quart dans les plans |
+| `…140100_ciqual_2025`                    | Catalogue partagé : 3 285 aliments CIQUAL (fichier généré, voir le README)                                                                                                  |
+| `…160000_training_programs`              | Exercices chronométrés, niveau et durée des programmes, thème des séances, une seule séance en cours par utilisateur, objectif d'entraînement                               |
+| `…160100_exercise_library`               | Bibliothèque partagée : 68 exercices (fichier généré depuis `src/domain/exercise-catalog.ts`)                                                                               |
+| `…090000_food_packages` (14/10)          | Taille et libellé de l'emballage d'un aliment (canette, paquet)                                                                                                             |
+| `…090100_exercise_library_more` (14/10)  | Bibliothèque portée à 121 exercices (fichier généré)                                                                                                                        |
+| `…090200_start_session_function` (14/10) | Fonction `start_session` : démarre une séance (séance, plan, séries) en une transaction, droits de l'utilisateur (RLS)                                                      |
+| `…200000_session_plan` (13/10)           | Plan propre à chaque séance (`session_exercises` : ordre, objectifs, superset, exercice remplacé, note) repris des séances existantes ; supersets des séances types         |
+| `…090000_flexible_schedule` (13/10)      | Planning souple : `workout_sessions.original_date` (occurrence déplacée, sautée ou faite un autre jour), une seule modification par occurrence, séance sautée à sa date     |
 
 ## Tables par domaine
 

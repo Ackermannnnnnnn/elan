@@ -32,8 +32,10 @@ import {
   reschedulePlanned,
   resumeSession,
   setSessionNote,
+  setSessionRest,
   setSessionSuperset,
   setTargetSets,
+  setWorkoutRest,
   setWorkoutSuperset,
   setWorkoutWeekday,
   skipOccurrence,
@@ -581,6 +583,36 @@ export async function setWorkoutSupersetAction(
     { itemId, linked },
     async (values) => {
       await setWorkoutSuperset(values.itemId, values.linked);
+      refresh();
+    },
+  );
+}
+
+const restSeconds = z.number().int().min(0).max(900);
+
+export async function setSessionRestAction(
+  itemId: string,
+  seconds: number,
+): Promise<ActionResult<string>> {
+  return runAction(
+    z.object({ itemId: uuid, seconds: restSeconds }),
+    { itemId, seconds },
+    async (values) => {
+      await setSessionRest(values.itemId, values.seconds);
+      refresh();
+    },
+  );
+}
+
+export async function setWorkoutRestAction(
+  itemId: string,
+  seconds: number,
+): Promise<ActionResult<string>> {
+  return runAction(
+    z.object({ itemId: uuid, seconds: restSeconds }),
+    { itemId, seconds },
+    async (values) => {
+      await setWorkoutRest(values.itemId, values.seconds);
       refresh();
     },
   );

@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { type Exercise, type TrainingSettings, toLibraryExercise } from "@/data/training";
 import { type Equipment, MUSCLES, type Muscle } from "@/domain/exercise-catalog";
+import { aliasesFor } from "@/domain/exercise-aliases";
 import { filterExercises } from "@/domain/exercise-search";
 import { availableEquipment, suitsLevel } from "@/domain/training-program";
 import {
@@ -74,6 +75,7 @@ export async function ExerciseBrowser({
       name: exercise.name,
       primary: exercise.primary_muscle as Muscle,
       equipment: exercise.equipment as Equipment[],
+      aliases: aliasesFor(exercise.owner_id === null ? exercise.slug : null),
     })),
     { query: search.q, muscle: search.muscle, equipment: search.mine ? available : null },
   );

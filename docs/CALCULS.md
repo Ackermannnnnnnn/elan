@@ -11,15 +11,15 @@ et laisse ajuster les objectifs.
 
 ## Besoins énergétiques (`energy.ts`)
 
-| Étape                     | Formule                                                                                                                                       |
-| ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| Métabolisme de base       | Mifflin-St Jeor : 10 × poids + 6,25 × taille − 5 × âge + s, avec s = +5 (homme), −161 (femme), −78 (non précisé : moyenne des deux)           |
-| Maintien                  | Métabolisme × coefficient d'activité : 1,2 / 1,375 / 1,55 / 1,725 / 1,9                                                                       |
-| Niveau d'activité suggéré | Barème de points sur le métier (0 à 3), les pas (0 à 3) et les minutes de sport par semaine (0 à 3) ; l'utilisateur peut toujours le corriger |
-| Perte de poids            | Rythme en % du poids par semaine : 0,25 / 0,5 / 0,75 ; déficit = rythme × 7 700 kcal / 7                                                      |
-| Prise de masse            | Rythme : 0,1 / 0,25 / 0,4 % par semaine ; surplus calculé de la même façon                                                                    |
-| Recomposition             | 10 % sous le maintien                                                                                                                         |
-| Maintien, forme           | Cible = maintien                                                                                                                              |
+| Étape                                | Formule                                                                                                                                       |
+| ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| Métabolisme de base                  | Mifflin-St Jeor : 10 × poids + 6,25 × taille − 5 × âge + s, avec s = +5 (homme), −161 (femme), −78 (non précisé : moyenne des deux)           |
+| Maintien                             | Métabolisme × coefficient d'activité : 1,2 / 1,375 / 1,55 / 1,725 / 1,9                                                                       |
+| Niveau d'activité suggéré            | Barème de points sur le métier (0 à 3), les pas (0 à 3) et les minutes de sport par semaine (0 à 3) ; l'utilisateur peut toujours le corriger |
+| Perte de poids                       | Rythme en % du poids par semaine : 0,25 / 0,5 / 0,75 ; déficit = rythme × 7 700 kcal / 7                                                      |
+| Prise de masse                       | Rythme : 0,1 / 0,25 / 0,4 % par semaine ; surplus calculé de la même façon                                                                    |
+| Perdre du poids et prendre du muscle | Rythme de perte (0,25 / 0,5 / 0,75 % par semaine), déficit plafonné à 20 % du maintien, protéines 2,2 g/kg                                    |
+| Maintien, forme                      | Cible = maintien                                                                                                                              |
 
 ### Garde-fous
 
@@ -36,15 +36,23 @@ et laisse ajuster les objectifs.
 - **Avertissements** (sans blocage) : IMC ≥ 35, perte visée > 20 % du poids,
   65 ans et plus, perte avec un IMC < 20, maintien inférieur au plancher.
 
+### IMC
+
+IMC = poids (kg) ÷ taille (m)². Classes de l'OMS : < 18,5 insuffisance
+pondérale ; 18,5–24,9 corpulence normale ; 25–29,9 surpoids ; 30–34,9 obésité
+modérée ; 35–39,9 sévère ; ≥ 40 massive. Fourchette affichée : poids
+correspondant à un IMC de 18,5 à 24,9 pour la taille (arrondi au demi-kilo
+vers l'intérieur). L'interface rappelle que l'IMC ne distingue pas muscle et graisse.
+
 ## Macronutriments
 
-| Nutriment          | Règle                                                                                                                  |
-| ------------------ | ---------------------------------------------------------------------------------------------------------------------- |
-| Protéines          | 2,0 g/kg (perte, recomposition), 1,8 g/kg (prise de masse), 1,6 g/kg (maintien, forme), plafonnées à 35 % de l'énergie |
-| Poids de référence | Poids réel ; au-delà d'un IMC de 30 : poids à IMC 25 + 40 % de l'écart                                                 |
-| Lipides            | 25 % de l'énergie, avec un minimum de 0,6 g/kg                                                                         |
-| Glucides           | Le reste de l'énergie (4 kcal/g pour protéines et glucides, 9 pour les lipides)                                        |
-| Fibres             | 14 g pour 1 000 kcal (repère indicatif)                                                                                |
+| Nutriment          | Règle                                                                                                                                                    |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Protéines          | 2,2 g/kg (perdre du poids et prendre du muscle), 2,0 g/kg (perte), 1,8 g/kg (prise de masse), 1,6 g/kg (maintien, forme), plafonnées à 35 % de l'énergie |
+| Poids de référence | Poids réel ; au-delà d'un IMC de 30 : poids à IMC 25 + 40 % de l'écart                                                                                   |
+| Lipides            | 25 % de l'énergie, avec un minimum de 0,6 g/kg                                                                                                           |
+| Glucides           | Le reste de l'énergie (4 kcal/g pour protéines et glucides, 9 pour les lipides)                                                                          |
+| Fibres             | 14 g pour 1 000 kcal (repère indicatif)                                                                                                                  |
 
 Réglage manuel : l'utilisateur fixe calories, protéines et lipides ; les
 glucides sont déduits de l'énergie restante.
@@ -92,6 +100,15 @@ glucides sont déduits de l'énergie restante.
   jamais classé végétalien.
 - **Rayon** de la liste de courses : d'après le groupe CIQUAL ou les catégories
   Open Food Facts.
+
+## Portions proposées (`nutrition.ts`)
+
+Boutons « en un geste » : l'emballage entier et sa moitié (taille fournie par
+Open Food Facts, `product_quantity`), la portion indiquée, sa moitié et son
+double (seulement si la portion est plus petite que l'emballage), pour une
+boisson sans emballage connu un verre (20 cl), une canette (33 cl) et une
+bouteille (50 cl), et toujours 100 g ou 100 ml. Une fiche Open Food Facts dont
+la quantité est en ml, cl ou l est enregistrée « pour 100 ml ».
 
 ## Recettes (`recipe.ts`)
 

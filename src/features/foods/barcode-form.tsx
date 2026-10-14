@@ -11,18 +11,8 @@ import { useFormMessages } from "@/components/forms/use-form-messages";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import type { ActionResult } from "@/lib/action-result";
+import { createBarcodeReader } from "./barcode-reader";
 import { type BarcodeFormValues, barcodeSchema } from "./schemas";
-
-type Detector = { detect: (source: HTMLVideoElement) => Promise<{ rawValue: string }[]> };
-type DetectorConstructor = new (options: { formats: string[] }) => Detector;
-
-/** Lecteur de code-barres du navigateur (Chrome Android, Edge…), s'il existe. */
-function getDetector(): DetectorConstructor | null {
-  if (typeof window === "undefined") return null;
-  const candidate = (window as unknown as { BarcodeDetector?: DetectorConstructor })
-    .BarcodeDetector;
-  return candidate ?? null;
-}
 
 export function BarcodeForm({
   action,
@@ -40,33 +30,46 @@ export function BarcodeForm({
   });
   const [cameraSupported, setCameraSupported] = useState(false);
   const [scanning, setScanning] = useState(false);
+  const [ready, setReady] = useState(false);
   const [cameraError, setCameraError] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
-  // Détection après l'hydratation : le serveur ne connaît pas le navigateur.
+  // Après l'hydratation (le serveur ne connaît pas le navigateur) : caméra
+  // disponible ? Si l'accès a déjà été accordé, le scan démarre tout seul.
   useEffect(() => {
-    const supported = getDetector() !== null && Boolean(navigator.mediaDevices?.getUserMedia);
+    const supported = Boolean(navigator.mediaDevices?.getUserMedia) && window.isSecureContext;
     const frame = requestAnimationFrame(() => setCameraSupported(supported));
+    if (supported) {
+      navigator.permissions
+        ?.query({ name: "camera" as PermissionName })
+        .then((status) => {
+          if (status.state === "granted") setScanning(true);
+        })
+        .catch(() => {});
+    }
     return () => cancelAnimationFrame(frame);
   }, []);
 
   useEffect(() => {
     if (!scanning) return;
-    const Detector = getDetector();
-    if (!Detector) return;
     let stream: MediaStream | null = null;
     let stopped = false;
     let timer: ReturnType<typeof setTimeout> | undefined;
-    const detector = new Detector({ formats: ["ean_13", "ean_8", "upc_a", "upc_e"] });
+    let detector: Awaited<ReturnType<typeof createBarcodeReader>> | null = null;
 
     const tick = async () => {
       const video = videoRef.current;
-      if (stopped || !video) return;
+      if (stopped || !video || !detector) return;
       try {
         const codes = await detector.detect(video);
         const code = codes[0]?.rawValue;
         if (code) {
           form.setValue("barcode", code);
+          try {
+            navigator.vibrate?.(80);
+          } catch {
+            // Vibration indisponible.
+          }
           setScanning(false);
           void onSubmit();
           return;
@@ -77,22 +80,34 @@ export function BarcodeForm({
       timer = setTimeout(tick, 250);
     };
 
-    navigator.mediaDevices
-      .getUserMedia({ video: { facingMode: "environment" } })
-      .then(async (media) => {
+    Promise.all([
+      navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } },
+        audio: false,
+      }),
+      createBarcodeReader(),
+    ])
+      .then(async ([media, reader]) => {
         stream = media;
-        if (stopped || !videoRef.current) return;
+        detector = reader;
+        if (stopped || !videoRef.current) {
+          media.getTracks().forEach((track) => track.stop());
+          return;
+        }
         videoRef.current.srcObject = media;
         await videoRef.current.play();
+        setReady(true);
         void tick();
       })
       .catch(() => {
+        stream?.getTracks().forEach((track) => track.stop());
         setCameraError(true);
         setScanning(false);
       });
 
     return () => {
       stopped = true;
+      setReady(false);
       if (timer) clearTimeout(timer);
       stream?.getTracks().forEach((track) => track.stop());
     };
@@ -101,18 +116,12 @@ export function BarcodeForm({
   return (
     <FormProvider {...form}>
       <form onSubmit={onSubmit} noValidate className="flex flex-col gap-5">
-        <TextField<BarcodeFormValues>
-          name="barcode"
-          label={t("barcode")}
-          hint={t("barcodeHint")}
-          placeholder="3017620422003"
-          autoComplete="off"
-        />
         {cameraSupported ? (
           <div className="flex flex-col gap-3">
             <Button
               type="button"
-              variant="secondary"
+              variant={scanning ? "secondary" : "primary"}
+              size="lg"
               className="self-start"
               onClick={() => {
                 setCameraError(false);
@@ -123,16 +132,39 @@ export function BarcodeForm({
               {scanning ? t("stopCamera") : t("useCamera")}
             </Button>
             {scanning ? (
-              <video
-                ref={videoRef}
-                muted
-                playsInline
-                aria-label={t("cameraLabel")}
-                className="aspect-video w-full max-w-md rounded-control bg-surface-muted object-cover"
-              />
+              <div className="relative w-full max-w-md overflow-hidden rounded-control bg-surface-muted">
+                <video
+                  ref={videoRef}
+                  muted
+                  playsInline
+                  aria-label={t("cameraLabel")}
+                  className="aspect-[4/3] w-full object-cover"
+                />
+                {/* Cadre de visée : placer le code-barres dans le rectangle. */}
+                <span
+                  aria-hidden="true"
+                  className="pointer-events-none absolute inset-x-[12%] top-1/2 h-1/3 -translate-y-1/2 rounded-control border-2 border-primary-foreground/90 shadow-[0_0_0_9999px_rgb(0_0_0/0.25)]"
+                />
+                <p
+                  role="status"
+                  className="absolute inset-x-0 bottom-0 bg-surface/85 px-3 py-2 text-center text-sm font-medium"
+                >
+                  {ready ? t("aim") : t("preparing")}
+                </p>
+              </div>
             ) : null}
           </div>
-        ) : null}
+        ) : (
+          <p className="text-sm text-muted-foreground">{t("noCamera")}</p>
+        )}
+        <TextField<BarcodeFormValues>
+          name="barcode"
+          label={t("barcode")}
+          hint={t("barcodeHint")}
+          placeholder="3017620422003"
+          autoComplete="off"
+          inputMode="numeric"
+        />
         {cameraError ? <Alert variant="error">{t("cameraError")}</Alert> : null}
         {formError ? (
           <Alert variant="error">
@@ -147,7 +179,7 @@ export function BarcodeForm({
         <SubmitButton
           pending={pending}
           pendingLabel={t("searching")}
-          size="lg"
+          variant="secondary"
           className="self-start"
         >
           {t("submit")}

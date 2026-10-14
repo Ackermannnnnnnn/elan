@@ -114,7 +114,10 @@ export function OnboardingWizard({ mode, initialValues, today }: WizardProps) {
       const parsed = personalAndGoalSchema.safeParse(form.getValues());
       if (!parsed.success) return false;
       const values = parsed.data;
-      const needsTarget = values.goalType === "fat_loss" || values.goalType === "muscle_gain";
+      const needsTarget =
+        values.goalType === "fat_loss" ||
+        values.goalType === "recomposition" ||
+        values.goalType === "muscle_gain";
       if (needsTarget && values.targetWeightKg === null) {
         form.setError("targetWeightKg", { message: "required" }, { shouldFocus: true });
         return false;

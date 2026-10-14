@@ -16,6 +16,8 @@ export type SearchableExercise = {
   name: string;
   primary: Muscle;
   equipment: readonly Equipment[];
+  /** Autres noms (anglais, jargon de salle) également cherchés. */
+  aliases?: readonly string[];
 };
 
 export type ExerciseFilters = {
@@ -38,7 +40,7 @@ export function filterExercises<T extends SearchableExercise>(
     const available = filters.equipment;
     if (available && !exercise.equipment.every((item) => available.includes(item))) return false;
     if (words.length === 0) return true;
-    const name = normalizeText(exercise.name);
-    return words.every((word) => name.includes(word));
+    const text = normalizeText([exercise.name, ...(exercise.aliases ?? [])].join(" "));
+    return words.every((word) => text.includes(word));
   });
 }

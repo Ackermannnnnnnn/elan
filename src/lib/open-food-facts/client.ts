@@ -22,6 +22,9 @@ const FIELDS = [
   "categories_tags",
   "serving_quantity",
   "serving_size",
+  "product_quantity",
+  "product_quantity_unit",
+  "quantity",
 ].join(",");
 
 export type LookupResult = MapResult | { ok: false; reason: "unavailable" };

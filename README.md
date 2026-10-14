@@ -24,6 +24,7 @@ Ce qui fonctionne aujourd'hui :
   un plan de départ dont chaque chiffre est expliqué ; modifiable ensuite depuis le profil.
 - **Calculateur** : métabolisme, maintien, objectif calorique, macros, durée
   estimée. Formules et seuils dans [`docs/CALCULS.md`](docs/CALCULS.md).
+- **IMC** sur l'accueil et dans Progrès (classe de l'OMS, fourchette saine, limites).
 - **Accueil** : calories restantes, macros, poids sur 30 jours, eau, pas,
   calories et protéines des 14 derniers jours.
 - **Journal alimentaire** : repas par jour, aliments personnels créés depuis
@@ -46,7 +47,7 @@ Ce qui fonctionne aujourd'hui :
 - **Liste de courses** : calculée depuis le plan, rangée par rayon, articles à
   cocher, prix saisis (aucun prix inventé), comparaison au budget.
 
-- **Entraînement** : bibliothèque de 68 exercices avec consignes ; programme
+- **Entraînement** : bibliothèque de 121 exercices avec consignes ; programme
   généré selon l'objectif, le niveau, le matériel, le temps disponible et les
   zones sensibles (corps entier, haut / bas, poussée / tirage / jambes) ;
   remplacement d'un exercice (même muscle, filtres « plus facile », « sans
@@ -64,6 +65,10 @@ Ce qui fonctionne aujourd'hui :
   (±15 s, passer, bips et vibration, écran maintenu allumé), pause, fin de
   séance avec ressenti, objectif proposé d'une séance à l'autre (double
   progression), historique et courbe de force estimée par exercice.
+- **Rapidité** : démarrer une séance se fait en un seul échange avec la base
+  (fonction `start_session`) ; une série validée passe au vert et lance le
+  repos immédiatement ; temps de repos réglable en deux gestes ; séance
+  déplaçable depuis la semaine en deux gestes.
 - **Imprévus en séance** : changer un exercice (machine prise) pour la séance
   ou aussi dans le programme, faire un exercice plus tard, réordonner, ajouter
   ou passer un exercice, supersets (dans la séance type ou en direct), notes

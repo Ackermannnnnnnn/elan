@@ -56,7 +56,8 @@ export const GAIN_PACE_PERCENT: Record<Pace, number> = { gentle: 0.1, moderate: 
 export const MAX_DEFICIT_RATIO = 0.25; // au plus 25 % sous le maintien
 export const MAX_SURPLUS_RATIO = 0.15; // au plus 15 % au-dessus du maintien
 export const MAX_SURPLUS_KCAL = 500;
-export const RECOMPOSITION_DEFICIT_RATIO = 0.1;
+/** Perdre du poids en prenant du muscle : déficit plus doux, au plus 20 % du maintien. */
+export const RECOMPOSITION_MAX_DEFICIT_RATIO = 0.2;
 /** Planchers caloriques en dessous desquels un suivi professionnel s'impose. */
 export const CALORIE_FLOOR: Record<Sex | "unspecified", number> = {
   female: 1200,
@@ -75,6 +76,27 @@ const round2 = (value: number) => Math.round(value * 100) / 100;
 export function bmi(weightKg: number, heightCm: number): number {
   const heightM = heightCm / 100;
   return weightKg / (heightM * heightM);
+}
+
+export type BmiCategory =
+  "underweight" | "normal" | "overweight" | "obesity_1" | "obesity_2" | "obesity_3";
+
+/** Classes de l'OMS : < 18,5 ; 18,5–24,9 ; 25–29,9 ; 30–34,9 ; 35–39,9 ; ≥ 40. */
+export function bmiCategory(value: number): BmiCategory {
+  if (value < 18.5) return "underweight";
+  if (value < 25) return "normal";
+  if (value < 30) return "overweight";
+  if (value < 35) return "obesity_1";
+  if (value < 40) return "obesity_2";
+  return "obesity_3";
+}
+
+/** Fourchette de poids correspondant à un IMC de 18,5 à 24,9 pour une taille (kg, arrondis à 0,5). */
+export function healthyWeightRange(heightCm: number): { minKg: number; maxKg: number } {
+  return {
+    minKg: Math.ceil(weightAtBmi(18.5, heightCm) * 2) / 2,
+    maxKg: Math.floor(weightAtBmi(24.9, heightCm) * 2) / 2,
+  };
 }
 
 /** Poids correspondant à un IMC donné pour une taille. */
@@ -179,10 +201,12 @@ export function calorieTarget(input: {
   let requestedWeeklyRateKg = 0;
   let delta = 0;
 
-  if (goalType === "fat_loss") {
+  if (goalType === "fat_loss" || goalType === "recomposition") {
     requestedWeeklyRateKg = -(weightKg * LOSS_PACE_PERCENT[pace]) / 100;
     delta = (requestedWeeklyRateKg * KCAL_PER_KG) / 7;
-    const maxDeficit = maintenanceKcal * MAX_DEFICIT_RATIO;
+    const maxDeficit =
+      maintenanceKcal *
+      (goalType === "recomposition" ? RECOMPOSITION_MAX_DEFICIT_RATIO : MAX_DEFICIT_RATIO);
     if (-delta > maxDeficit) {
       delta = -maxDeficit;
       adjustments.push("deficit_capped");
@@ -195,9 +219,6 @@ export function calorieTarget(input: {
       delta = maxSurplus;
       adjustments.push("surplus_capped");
     }
-  } else if (goalType === "recomposition") {
-    delta = -maintenanceKcal * RECOMPOSITION_DEFICIT_RATIO;
-    requestedWeeklyRateKg = (delta * 7) / KCAL_PER_KG;
   }
 
   let targetKcal = round(maintenanceKcal + delta, 10);
@@ -227,7 +248,7 @@ export function calorieTarget(input: {
 /** Protéines visées, en g par kg de poids de référence. */
 export const PROTEIN_G_PER_KG: Record<GoalType, number> = {
   fat_loss: 2.0,
-  recomposition: 2.0,
+  recomposition: 2.2,
   muscle_gain: 1.8,
   maintenance: 1.6,
   fitness: 1.6,
@@ -377,7 +398,8 @@ export function assessGoal(input: {
 
   if (age < MIN_ADULT_AGE) blocking.push({ code: "under_age" });
 
-  if (goalType === "fat_loss" && currentBmi < MIN_HEALTHY_BMI) {
+  const losing = goalType === "fat_loss" || goalType === "recomposition";
+  if (losing && currentBmi < MIN_HEALTHY_BMI) {
     blocking.push({ code: "already_underweight" });
   }
 
@@ -389,20 +411,20 @@ export function assessGoal(input: {
         minimumWeightKg: Math.ceil(weightAtBmi(MIN_HEALTHY_BMI, heightCm) * 2) / 2,
       });
     }
-    if (goalType === "fat_loss" && targetWeightKg >= weightKg) {
+    if (losing && targetWeightKg >= weightKg) {
       blocking.push({ code: "target_not_below_current" });
     }
     if (goalType === "muscle_gain" && targetWeightKg <= weightKg) {
       blocking.push({ code: "target_not_above_current" });
     }
-    if (goalType === "fat_loss" && (weightKg - targetWeightKg) / weightKg > 0.2) {
+    if (losing && (weightKg - targetWeightKg) / weightKg > 0.2) {
       warnings.push("large_loss");
     }
   }
 
   if (currentBmi >= 35) warnings.push("bmi_high");
   if (age >= 65) warnings.push("senior");
-  if (goalType === "fat_loss" && currentBmi >= MIN_HEALTHY_BMI && currentBmi < 20) {
+  if (losing && currentBmi >= MIN_HEALTHY_BMI && currentBmi < 20) {
     warnings.push("low_bmi_loss");
   }
   if (input.maintenanceKcal < CALORIE_FLOOR[input.sex ?? "unspecified"]) {

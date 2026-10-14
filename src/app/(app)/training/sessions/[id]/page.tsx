@@ -3,6 +3,7 @@ import {
   ArrowLeftRight,
   ArrowUp,
   ArrowLeft,
+  ChevronDown,
   Clock,
   Link2,
   Minus,
@@ -26,7 +27,7 @@ import { Stat, StatGrid } from "@/components/ui/stat";
 import { ROUTES } from "@/config/routes";
 import { getSession, sessionSeconds } from "@/data/training";
 import { type LoggedSet, summarizeSets } from "@/domain/progression";
-import { afterSet, proposedValues, supersetLabels } from "@/domain/session-flow";
+import { afterSet, proposedValues, supersetGroups, supersetLabels } from "@/domain/session-flow";
 import {
   addSetAction,
   finishSessionAction,
@@ -37,6 +38,7 @@ import {
   removeSessionExerciseAction,
   resumeSessionAction,
   setSessionNoteAction,
+  setSessionRestAction,
   setSessionSupersetAction,
 } from "@/features/training/actions";
 import { DiscardSessionButton, FinishForm, NoteForm } from "@/features/training/session-controls";
@@ -49,6 +51,7 @@ import {
 } from "@/features/training/session-ui";
 import { demoFor } from "@/features/training/demo";
 import { MovementDemo } from "@/features/training/movement-demo";
+import { RestPicker } from "@/features/training/rest-picker";
 import { addToSessionUrl, exerciseUrl, swapUrl } from "@/features/training/urls";
 import { cn } from "@/lib/utils";
 
@@ -84,6 +87,7 @@ export default async function SessionPage({ params }: PageProps<"/training/sessi
     supersetWithNext: entry.item.superset_with_next,
   }));
   const labels = supersetLabels(flow);
+  const groups = supersetGroups(flow);
 
   const describe = (sets: readonly LoggedSet[], timed: boolean) =>
     sets
@@ -233,7 +237,7 @@ export default async function SessionPage({ params }: PageProps<"/training/sessi
       <RestTimerProvider sessionId={session.id}>
         {exercises.length === 0 ? (
           <Card className="mb-4">
-            <p className="mb-4 text-muted-foreground">{tSession("emptySession")}</p>
+            <p className="text-muted-foreground">{tSession("emptySession")}</p>
           </Card>
         ) : null}
         <ol className="flex flex-col">
@@ -244,13 +248,21 @@ export default async function SessionPage({ params }: PageProps<"/training/sessi
             const linkedToNext = Boolean(label) && item.superset_with_next && index < count - 1;
             const remaining = entry.sets.filter((set) => !set.completed_at).length;
             const doneCount = entry.sets.length - remaining;
+            const complete = entry.sets.length > 0 && remaining === 0;
             const target_ = suggestion
               ? { weightKg: suggestion.weightKg ?? null, reps: suggestion.reps }
               : null;
             const nextExercise = exercises[index + 1]?.exercise.name ?? null;
             const cueFor = (setNumber: number): AfterSetCue => {
               const base = afterSet(flow, index);
-              if (base.kind !== "rest" || base.next !== null) return base;
+              if (base.kind !== "rest") return base;
+              const sources = (groups.find((group) => group.includes(index)) ?? [index]).map(
+                (member) => ({
+                  id: exercises[member]?.item.id ?? "",
+                  seconds: exercises[member]?.target.rest_seconds ?? null,
+                }),
+              );
+              if (base.next !== null) return { ...base, sources };
               const hasNextSet = entry.sets.some(
                 (set) => set.set_number > setNumber && !set.completed_at,
               );
@@ -260,240 +272,262 @@ export default async function SessionPage({ params }: PageProps<"/training/sessi
                 next: hasNextSet
                   ? tSession("nextSet", { name: exercise.name, number: setNumber + 1 })
                   : nextExercise,
+                sources,
               };
             };
+            const goal = suggestion
+              ? suggestion.reason === "first"
+                ? tSession("suggestFirst")
+                : suggestion.reason === "harderVariant"
+                  ? tSession("suggestHarder")
+                  : suggestion.weightKg
+                    ? tSession("goalWeighted", {
+                        weight: number(suggestion.weightKg),
+                        reps: suggestion.reps,
+                      })
+                    : tSession(timed ? "goalSeconds" : "goalReps", { reps: suggestion.reps })
+              : null;
             return (
-              <li key={item.id} className={cn(linkedToNext ? "mb-0" : "mb-4")}>
-                <Card className={cn(label && "border-l-4 border-l-primary")}>
-                  <CardHeader className="mb-3">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0">
-                        {label ? (
-                          <Badge variant="primary" className="mb-1">
-                            {tSession("supersetBadge", { label })}
-                          </Badge>
-                        ) : null}
-                        <CardTitle>
-                          <Link
-                            href={exerciseUrl(exercise.id)}
-                            className="underline-offset-4 hover:underline"
-                          >
-                            {exercise.name}
-                          </Link>
-                        </CardTitle>
-                      </div>
-                      <Button asChild variant="secondary" size="sm" className="shrink-0">
-                        <Link
-                          href={swapUrl(session.id, item.id)}
-                          aria-label={tSession("swapLabel", { name: exercise.name })}
-                        >
-                          <ArrowLeftRight aria-hidden="true" />
-                          {tSession("swap")}
-                        </Link>
-                      </Button>
-                    </div>
-                    {entry.replaced ? (
-                      <p className="text-sm text-muted-foreground">
-                        {tSession("replacing", { name: entry.replaced.name })}
-                      </p>
-                    ) : null}
-                    <p className="text-sm text-muted-foreground tabular-nums">
-                      {t("setsTimes", {
-                        sets: entry.sets.length,
-                        reps: timed
-                          ? t("secondsRange", { min: target.rep_min, max: target.rep_max })
-                          : t("repsRange", { min: target.rep_min, max: target.rep_max }),
-                      })}
-                      {target.rest_seconds
-                        ? ` · ${t("restSeconds", { seconds: target.rest_seconds })}`
-                        : ""}
-                    </p>
-                    {entry.previous.length > 0 ? (
-                      <p className="text-sm text-muted-foreground tabular-nums">
-                        {tSession("previous", { sets: describe(entry.previous, timed) })}
-                      </p>
-                    ) : null}
-                    {suggestion ? (
-                      <p className="text-sm font-medium tabular-nums">
-                        {suggestion.reason === "first"
-                          ? tSession("suggestFirst")
-                          : suggestion.reason === "harderVariant"
-                            ? tSession("suggestHarder")
-                            : suggestion.weightKg
-                              ? tSession(
-                                  suggestion.reason === "increaseWeight"
-                                    ? "suggestWeightUp"
-                                    : "suggestWeighted",
-                                  { weight: number(suggestion.weightKg), reps: suggestion.reps },
-                                )
-                              : tSession(timed ? "suggestSeconds" : "suggestReps", {
-                                  reps: suggestion.reps,
-                                })}
-                      </p>
-                    ) : null}
-                    {entry.lastNote && entry.lastNote !== item.note ? (
-                      <p className="mt-1 flex items-start gap-1.5 rounded-control bg-warning-soft px-3 py-2 text-sm">
-                        <StickyNote aria-hidden="true" className="mt-0.5 size-4 shrink-0" />
-                        <span>{tSession("lastNote", { note: entry.lastNote })}</span>
-                      </p>
-                    ) : null}
-                    <MovementDemo {...demoFor(exercise)} className="mt-2" />
-                  </CardHeader>
-
-                  {entry.sets.length > 0 ? (
-                    <div className="grid grid-cols-[2rem_1fr_1fr_auto] gap-2 px-2 text-xs font-semibold text-muted-foreground">
-                      <span>{tSession("set")}</span>
-                      <span>{tSession("weight")}</span>
-                      <span>{timed ? tSession("seconds") : tSession("reps")}</span>
-                      <span className="w-11" />
-                    </div>
-                  ) : (
-                    <p className="text-sm text-muted-foreground">{tSession("stopped")}</p>
-                  )}
-                  <div className="flex flex-col">
-                    {entry.sets.map((set) => {
-                      const values = proposedValues(
-                        entry.sets.map((other) => ({
-                          setNumber: other.set_number,
-                          done: Boolean(other.completed_at),
-                          weightKg: other.weight_kg,
-                          reps: other.reps,
-                        })),
-                        set.set_number,
-                        target_,
-                      );
-                      return (
-                        <SetRow
-                          key={set.id}
-                          setId={set.id}
-                          setNumber={set.set_number}
-                          timed={timed}
-                          done={Boolean(set.completed_at)}
-                          initial={{
-                            weightKg: decimal(set.weight_kg),
-                            reps: set.reps === null ? "" : String(set.reps),
-                          }}
-                          proposed={{
-                            weightKg: values?.weightKg ? decimal(values.weightKg) : "",
-                            reps: values?.reps ? String(values.reps) : "",
-                          }}
-                          after={cueFor(set.set_number)}
-                          disabled={paused}
-                          action={logSetAction.bind(null, set.id)}
-                        />
-                      );
-                    })}
-                  </div>
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    <ActionButton
-                      action={addSetAction.bind(null, session.id, exercise.id)}
-                      pendingLabel="…"
-                      variant="ghost"
-                      size="sm"
-                      disabled={paused}
-                    >
-                      <Plus aria-hidden="true" />
-                      {tSession("addSet")}
-                    </ActionButton>
-                    {remaining > 0 ? (
-                      <ActionButton
-                        action={removeLastSetAction.bind(null, session.id, exercise.id)}
-                        pendingLabel="…"
-                        variant="ghost"
-                        size="sm"
-                        disabled={paused}
-                      >
-                        <Minus aria-hidden="true" />
-                        {tSession("removeSet")}
-                      </ActionButton>
-                    ) : null}
-                  </div>
-
-                  <details className="mt-3 border-t border-border pt-3">
-                    <summary className="cursor-pointer text-sm font-semibold text-primary">
-                      {tSession("moreOptions")}
-                      {item.note ? (
-                        <span className="ml-2 font-normal text-muted-foreground">
-                          · {tSession("hasNote")}
+              <li key={item.id} className={cn(linkedToNext ? "mb-0" : "mb-3")}>
+                <Card className={cn("p-0 sm:p-0", label && "border-l-4 border-l-primary")}>
+                  <details open={!complete} className="group">
+                    <summary className="flex cursor-pointer list-none items-start gap-3 px-4 pt-4 pb-3 sm:px-5 [&::-webkit-details-marker]:hidden">
+                      <span className="min-w-0 flex-1">
+                        <span className="flex flex-wrap items-center gap-2">
+                          {label ? (
+                            <Badge variant="primary">{tSession("supersetBadge", { label })}</Badge>
+                          ) : null}
+                          {complete ? (
+                            <Badge variant="primary">
+                              {tSession("exerciseDone", { count: doneCount })}
+                            </Badge>
+                          ) : (
+                            <span className="text-xs font-semibold text-muted-foreground tabular-nums">
+                              {tSession("progress", { done: doneCount, total: entry.sets.length })}
+                            </span>
+                          )}
                         </span>
-                      ) : null}
+                        <span className="mt-0.5 block text-lg leading-snug font-semibold">
+                          {exercise.name}
+                        </span>
+                        <span className="block text-sm text-muted-foreground tabular-nums">
+                          {timed
+                            ? t("secondsRange", { min: target.rep_min, max: target.rep_max })
+                            : t("repsRange", { min: target.rep_min, max: target.rep_max })}
+                          {entry.replaced
+                            ? ` · ${tSession("replacing", { name: entry.replaced.name })}`
+                            : ""}
+                        </span>
+                      </span>
+                      <ChevronDown
+                        aria-hidden="true"
+                        className="mt-1 size-5 shrink-0 text-muted-foreground transition-transform group-open:rotate-180"
+                      />
                     </summary>
-                    <div className="mt-3 flex flex-col gap-4">
-                      <div className="flex flex-wrap gap-2">
-                        {index < count - 1 && remaining > 0 ? (
-                          <ActionButton
-                            action={moveSessionExerciseAction.bind(null, item.id, "last")}
-                            pendingLabel="…"
-                            variant="secondary"
-                            size="sm"
+
+                    <div className="px-4 pb-4 sm:px-5">
+                      {entry.previous.length > 0 || goal ? (
+                        <p className="mb-2 text-sm tabular-nums">
+                          {entry.previous.length > 0 ? (
+                            <span className="text-muted-foreground">
+                              {tSession("previous", { sets: describe(entry.previous, timed) })}
+                            </span>
+                          ) : null}
+                          {entry.previous.length > 0 && goal ? <br /> : null}
+                          {goal ? <span className="font-medium">{goal}</span> : null}
+                        </p>
+                      ) : null}
+                      {entry.lastNote && entry.lastNote !== item.note ? (
+                        <p className="mb-2 flex items-start gap-1.5 rounded-control bg-warning-soft px-3 py-2 text-sm">
+                          <StickyNote aria-hidden="true" className="mt-0.5 size-4 shrink-0" />
+                          <span>{tSession("lastNote", { note: entry.lastNote })}</span>
+                        </p>
+                      ) : null}
+
+                      <div className="mb-2 flex flex-wrap items-start gap-2">
+                        <RestPicker
+                          seconds={target.rest_seconds}
+                          exerciseName={exercise.name}
+                          action={setSessionRestAction.bind(null, item.id)}
+                          overrideKey={item.id}
+                        />
+                        <Button asChild variant="secondary" size="sm">
+                          <Link
+                            href={swapUrl(session.id, item.id)}
+                            aria-label={tSession("swapLabel", { name: exercise.name })}
                           >
-                            <Clock aria-hidden="true" />
-                            {tSession("later")}
-                          </ActionButton>
-                        ) : null}
+                            <ArrowLeftRight aria-hidden="true" />
+                            {tSession("swap")}
+                          </Link>
+                        </Button>
+                      </div>
+
+                      {entry.sets.length > 0 ? (
+                        <div className="grid grid-cols-[2rem_1fr_1fr_auto] gap-2 px-2 text-xs font-semibold text-muted-foreground">
+                          <span>{tSession("set")}</span>
+                          <span>{tSession("weight")}</span>
+                          <span>{timed ? tSession("seconds") : tSession("reps")}</span>
+                          <span className="w-11" />
+                        </div>
+                      ) : (
+                        <p className="text-sm text-muted-foreground">{tSession("stopped")}</p>
+                      )}
+                      <div className="flex flex-col">
+                        {entry.sets.map((set) => {
+                          const values = proposedValues(
+                            entry.sets.map((other) => ({
+                              setNumber: other.set_number,
+                              done: Boolean(other.completed_at),
+                              weightKg: other.weight_kg,
+                              reps: other.reps,
+                            })),
+                            set.set_number,
+                            target_,
+                          );
+                          return (
+                            <SetRow
+                              key={set.id}
+                              setId={set.id}
+                              setNumber={set.set_number}
+                              timed={timed}
+                              done={Boolean(set.completed_at)}
+                              initial={{
+                                weightKg: decimal(set.weight_kg),
+                                reps: set.reps === null ? "" : String(set.reps),
+                              }}
+                              proposed={{
+                                weightKg: values?.weightKg ? decimal(values.weightKg) : "",
+                                reps: values?.reps ? String(values.reps) : "",
+                              }}
+                              after={cueFor(set.set_number)}
+                              disabled={paused}
+                              action={logSetAction.bind(null, set.id)}
+                            />
+                          );
+                        })}
+                      </div>
+
+                      <div className="mt-2 flex flex-wrap items-center gap-1">
                         <ActionButton
-                          action={moveSessionExerciseAction.bind(null, item.id, -1)}
+                          action={addSetAction.bind(null, session.id, exercise.id)}
                           pendingLabel="…"
                           variant="ghost"
                           size="sm"
-                          disabled={index === 0}
-                          aria-label={t("moveUp", { name: exercise.name })}
+                          disabled={paused}
                         >
-                          <ArrowUp aria-hidden="true" />
-                          {tSession("up")}
+                          <Plus aria-hidden="true" />
+                          {tSession("addSet")}
                         </ActionButton>
-                        <ActionButton
-                          action={moveSessionExerciseAction.bind(null, item.id, 1)}
-                          pendingLabel="…"
-                          variant="ghost"
-                          size="sm"
-                          disabled={index === count - 1}
-                          aria-label={t("moveDown", { name: exercise.name })}
-                        >
-                          <ArrowDown aria-hidden="true" />
-                          {tSession("down")}
-                        </ActionButton>
-                        {index < count - 1 ? (
+                        {remaining > 0 ? (
                           <ActionButton
-                            action={setSessionSupersetAction.bind(
-                              null,
-                              item.id,
-                              !item.superset_with_next,
-                            )}
+                            action={removeLastSetAction.bind(null, session.id, exercise.id)}
                             pendingLabel="…"
                             variant="ghost"
                             size="sm"
-                            aria-label={
-                              item.superset_with_next
-                                ? tSession("unlink")
-                                : tSession("link", { name: nextExercise ?? "" })
-                            }
+                            disabled={paused}
                           >
-                            {item.superset_with_next ? (
-                              <Unlink aria-hidden="true" />
-                            ) : (
-                              <Link2 aria-hidden="true" />
-                            )}
-                            {item.superset_with_next ? tSession("unlink") : tSession("linkShort")}
-                          </ActionButton>
-                        ) : null}
-                        {remaining > 0 || doneCount === 0 ? (
-                          <ActionButton
-                            action={removeSessionExerciseAction.bind(null, item.id)}
-                            pendingLabel="…"
-                            variant="ghost"
-                            size="sm"
-                          >
-                            {doneCount > 0 ? tSession("stopExercise") : tSession("skipExercise")}
+                            <Minus aria-hidden="true" />
+                            {tSession("removeSet")}
                           </ActionButton>
                         ) : null}
                       </div>
-                      <NoteForm
-                        key={item.note ?? ""}
-                        idPrefix={item.id}
-                        defaultNote={item.note ?? ""}
-                        action={setSessionNoteAction.bind(null, item.id)}
-                      />
+
+                      <MovementDemo {...demoFor(exercise)} className="mt-2" />
+
+                      <details className="mt-3 border-t border-border pt-3">
+                        <summary className="cursor-pointer text-sm font-semibold text-primary">
+                          {tSession("moreOptions")}
+                          {item.note ? (
+                            <span className="ml-2 font-normal text-muted-foreground">
+                              · {tSession("hasNote")}
+                            </span>
+                          ) : null}
+                        </summary>
+                        <div className="mt-3 flex flex-col gap-4">
+                          <div className="flex flex-wrap gap-2">
+                            {index < count - 1 && remaining > 0 ? (
+                              <ActionButton
+                                action={moveSessionExerciseAction.bind(null, item.id, "last")}
+                                pendingLabel="…"
+                                variant="secondary"
+                                size="sm"
+                              >
+                                <Clock aria-hidden="true" />
+                                {tSession("later")}
+                              </ActionButton>
+                            ) : null}
+                            <ActionButton
+                              action={moveSessionExerciseAction.bind(null, item.id, -1)}
+                              pendingLabel="…"
+                              variant="ghost"
+                              size="sm"
+                              disabled={index === 0}
+                              aria-label={t("moveUp", { name: exercise.name })}
+                            >
+                              <ArrowUp aria-hidden="true" />
+                              {tSession("up")}
+                            </ActionButton>
+                            <ActionButton
+                              action={moveSessionExerciseAction.bind(null, item.id, 1)}
+                              pendingLabel="…"
+                              variant="ghost"
+                              size="sm"
+                              disabled={index === count - 1}
+                              aria-label={t("moveDown", { name: exercise.name })}
+                            >
+                              <ArrowDown aria-hidden="true" />
+                              {tSession("down")}
+                            </ActionButton>
+                            {index < count - 1 ? (
+                              <ActionButton
+                                action={setSessionSupersetAction.bind(
+                                  null,
+                                  item.id,
+                                  !item.superset_with_next,
+                                )}
+                                pendingLabel="…"
+                                variant="ghost"
+                                size="sm"
+                                aria-label={
+                                  item.superset_with_next
+                                    ? tSession("unlink")
+                                    : tSession("link", { name: nextExercise ?? "" })
+                                }
+                              >
+                                {item.superset_with_next ? (
+                                  <Unlink aria-hidden="true" />
+                                ) : (
+                                  <Link2 aria-hidden="true" />
+                                )}
+                                {item.superset_with_next
+                                  ? tSession("unlink")
+                                  : tSession("linkShort")}
+                              </ActionButton>
+                            ) : null}
+                            {remaining > 0 || doneCount === 0 ? (
+                              <ActionButton
+                                action={removeSessionExerciseAction.bind(null, item.id)}
+                                pendingLabel="…"
+                                variant="ghost"
+                                size="sm"
+                              >
+                                {doneCount > 0
+                                  ? tSession("stopExercise")
+                                  : tSession("skipExercise")}
+                              </ActionButton>
+                            ) : null}
+                            <Button asChild variant="ghost" size="sm">
+                              <Link href={exerciseUrl(exercise.id)}>{tSession("history")}</Link>
+                            </Button>
+                          </div>
+                          <NoteForm
+                            key={item.note ?? ""}
+                            idPrefix={item.id}
+                            defaultNote={item.note ?? ""}
+                            action={setSessionNoteAction.bind(null, item.id)}
+                          />
+                        </div>
+                      </details>
                     </div>
                   </details>
                 </Card>

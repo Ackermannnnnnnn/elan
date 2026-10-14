@@ -16,6 +16,7 @@ import { FormProvider } from "react-hook-form";
 import { useFieldError } from "@/components/forms/fields";
 import { SubmitButton } from "@/components/forms/submit-button";
 import { useActionForm } from "@/components/forms/use-action-form";
+import { useFormMessages } from "@/components/forms/use-form-messages";
 import { Button } from "@/components/ui/button";
 import { UnitInput } from "@/components/ui/unit-input";
 import type { ActionResult } from "@/lib/action-result";
@@ -95,7 +96,16 @@ const vibrate = (pattern: number[]) => {
 // --- Minuteur de repos ------------------------------------------------------------------
 
 export type AfterSetCue =
-  | { kind: "rest"; seconds: number; next: string | null }
+  | {
+      kind: "rest";
+      seconds: number;
+      next: string | null;
+      /**
+       * Exercices dont le repos décide (un seul, ou tout le superset). Un repos
+       * changé à l'instant (pas encore rechargé depuis le serveur) est pris en compte.
+       */
+      sources?: { id: string; seconds: number | null }[];
+    }
   | { kind: "chain"; next: string }
   | { kind: "none" };
 
@@ -103,8 +113,20 @@ type TimerState =
   | { kind: "rest"; endsAt: number; total: number; next: string | null }
   | { kind: "chain"; next: string; at: number };
 
-type RestContext = { start: (cue: AfterSetCue) => void; stop: () => void };
-const Rest = createContext<RestContext>({ start: () => {}, stop: () => {} });
+type RestContext = {
+  start: (cue: AfterSetCue) => void;
+  stop: () => void;
+  /** Repos choisi à l'instant pour un exercice de la séance. */
+  setOverride: (id: string, seconds: number) => void;
+};
+const Rest = createContext<RestContext>({
+  start: () => {},
+  stop: () => {},
+  setOverride: () => {},
+});
+
+/** Pour le sélecteur de repos : le minuteur utilise aussitôt le nouveau temps. */
+export const useRestOverride = () => useContext(Rest).setOverride;
 
 /**
  * Minuteur de repos partagé par toute la séance : grande barre fixée en bas de
@@ -126,6 +148,10 @@ export function RestTimerProvider({
   const [sound, setSound] = useState(true);
   const lastCue = useRef<number | null>(null);
   const finishedRef = useRef(false);
+  const overrides = useRef(new Map<string, number>());
+  const setOverride = useCallback((id: string, seconds: number) => {
+    overrides.current.set(id, seconds);
+  }, []);
 
   // Reprise après rechargement, réglage du son.
   useEffect(() => {
@@ -169,11 +195,22 @@ export function RestTimerProvider({
   const start = useCallback(
     (cue: AfterSetCue) => {
       unlockAudio();
-      if (cue.kind === "rest") {
+      const seconds =
+        cue.kind === "rest" && cue.sources
+          ? Math.max(
+              0,
+              ...cue.sources.map(
+                (source) => overrides.current.get(source.id) ?? source.seconds ?? 0,
+              ),
+            )
+          : cue.kind === "rest"
+            ? cue.seconds
+            : 0;
+      if (cue.kind === "rest" && seconds > 0) {
         save({
           kind: "rest",
-          endsAt: Date.now() + cue.seconds * 1000,
-          total: cue.seconds,
+          endsAt: Date.now() + seconds * 1000,
+          total: seconds,
           next: cue.next,
         });
       } else if (cue.kind === "chain") {
@@ -185,7 +222,7 @@ export function RestTimerProvider({
     [save],
   );
   const stop = useCallback(() => save(null), [save]);
-  const value = useMemo(() => ({ start, stop }), [start, stop]);
+  const value = useMemo(() => ({ start, stop, setOverride }), [start, stop, setOverride]);
 
   const remaining = state?.kind === "rest" ? (state.endsAt - now) / 1000 : 0;
   const finished = state?.kind === "rest" && remaining <= 0;
@@ -465,15 +502,32 @@ export function SetRow({
   action: (values: SetFormValues) => Promise<ActionResult<string>>;
 }) {
   const t = useTranslations("Training.session");
+  const messages = useFormMessages();
   const rest = useContext(Rest);
-  const { form, onSubmit, pending } = useActionForm({
+  // Affichage immédiat : la série passe au vert et le repos démarre sans
+  // attendre le serveur ; en cas d'échec, on revient en arrière.
+  const [optimistic, setOptimistic] = useState(false);
+  const { form, onSubmit, pending, formError } = useActionForm({
     schema: setSchema,
     defaultValues: initial,
-    action,
-    onSuccess: () => {
-      if (!done) rest.start(after);
+    action: async (values) => {
+      const result = await action(values);
+      if (!result.ok) {
+        setOptimistic(false);
+        if (!done) rest.stop();
+      }
+      return result;
     },
   });
+  const shownDone = done || optimistic;
+
+  // Une série encore en cours d'enregistrement : prévenir avant de quitter la page.
+  useEffect(() => {
+    if (!pending) return;
+    const warn = (event: BeforeUnloadEvent) => event.preventDefault();
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, [pending]);
   const weightId = `weight-${setId}`;
   const repsId = `reps-${setId}`;
 
@@ -486,6 +540,11 @@ export function SetRow({
     if (form.getValues("reps") === "" && proposed.reps !== "") {
       form.setValue("reps", proposed.reps);
     }
+    const parsed = setSchema.safeParse(form.getValues());
+    if (parsed.success && !done && !pending) {
+      setOptimistic(true);
+      rest.start(after);
+    }
     return onSubmit(event);
   };
 
@@ -496,7 +555,7 @@ export function SetRow({
         noValidate
         className={cn(
           "grid grid-cols-[2rem_1fr_1fr_auto] items-start gap-2 rounded-control px-2 py-2",
-          done && "bg-success-soft/60",
+          shownDone && "bg-success-soft/60",
         )}
       >
         <span className="pt-3 text-sm font-semibold text-muted-foreground tabular-nums">
@@ -538,10 +597,10 @@ export function SetRow({
           <FieldError name="reps" />
         </div>
         <SubmitButton
-          pending={pending}
+          pending={pending && !optimistic}
           pendingLabel=""
           size="icon"
-          variant={done ? "primary" : "secondary"}
+          variant={shownDone ? "primary" : "secondary"}
           disabled={disabled}
           aria-label={
             done ? t("updateSet", { number: setNumber }) : t("validateSet", { number: setNumber })
@@ -552,6 +611,11 @@ export function SetRow({
         >
           <Check aria-hidden="true" />
         </SubmitButton>
+        {formError ? (
+          <p role="alert" className="col-span-4 text-sm font-medium text-destructive">
+            {messages.error(formError)}
+          </p>
+        ) : null}
       </form>
     </FormProvider>
   );

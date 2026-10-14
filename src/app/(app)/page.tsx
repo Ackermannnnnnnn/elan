@@ -12,6 +12,7 @@ import { getOwnProfile, getToday } from "@/data/profile";
 import { getSteps, listWater, listWeights } from "@/data/tracking";
 import { shouldRecalculate } from "@/domain/energy";
 import { progressTowards, sumMacros } from "@/domain/nutrition";
+import { bmi, bmiCategory } from "@/domain/energy";
 import { movingAverage } from "@/domain/weight-trend";
 import { IntakeChart } from "@/features/nutrition/intake-chart";
 import { RecalculateNotice } from "@/features/targets/recalculate-notice";
@@ -53,6 +54,7 @@ export default async function HomePage() {
     getFormatter(),
   ]);
   const tChart = await getTranslations("Progress.chart");
+  const tBmi = await getTranslations("Bmi");
 
   const number = (value: number, digits = 0) =>
     format.number(value, { minimumFractionDigits: digits, maximumFractionDigits: digits });
@@ -205,6 +207,19 @@ export default async function HomePage() {
                 <span className="text-sm text-muted-foreground">
                   {t("weight.on", { date: longDate(latest.date) })}
                 </span>
+                {profile?.height_cm ? (
+                  <Link
+                    href={ROUTES.progress}
+                    className="block text-right text-sm text-muted-foreground underline-offset-4 hover:underline"
+                  >
+                    {tBmi("short", {
+                      value: number(bmi(latest.weightKg, profile.height_cm), 1),
+                      category: tBmi(
+                        `category.${bmiCategory(bmi(latest.weightKg, profile.height_cm))}`,
+                      ),
+                    })}
+                  </Link>
+                ) : null}
               </p>
             ) : null}
           </div>

@@ -34,6 +34,9 @@ const productSchema = z.object({
   brands: text,
   serving_quantity: optionalNumber,
   serving_size: text,
+  product_quantity: optionalNumber,
+  product_quantity_unit: text,
+  quantity: text,
   allergens_tags: tags,
   traces_tags: tags,
   ingredients_analysis_tags: tags,
@@ -91,6 +94,11 @@ export type OpenFoodFactsFood = {
   saltG: number | null;
   servingSizeG: number | null;
   servingLabel: string | null;
+  /** Contenu de l'emballage (g ou ml), ex. 330 pour une canette de 33 cl. */
+  packageSizeG: number | null;
+  packageLabel: string | null;
+  /** Valeurs pour 100 ml (boisson) ou pour 100 g. */
+  basis: "100g" | "100ml";
   allergens: AllergenCode[];
   dietClass: DietClass;
   aisle: Aisle;
@@ -170,6 +178,16 @@ export function mapOpenFoodFactsProduct(barcode: string, payload: unknown): MapR
       ? round(product.serving_quantity, 1)
       : null;
   const brand = product.brands?.split(",")[0]?.trim().slice(0, 120) || null;
+  const packageSizeG =
+    product.product_quantity !== undefined &&
+    product.product_quantity > 0 &&
+    product.product_quantity <= 10000
+      ? round(product.product_quantity, 1)
+      : null;
+  // Boisson : quantité exprimée en ml, cl ou l (les valeurs « _100g » d'OFF sont alors pour 100 ml).
+  const liquid =
+    product.product_quantity_unit?.toLowerCase() === "ml" ||
+    /\d\s*(ml|cl|l)\b/i.test(product.quantity ?? "");
 
   return {
     ok: true,
@@ -187,6 +205,9 @@ export function mapOpenFoodFactsProduct(barcode: string, payload: unknown): MapR
       saltG: nullable(within(nutriments.salt_100g, 100)),
       servingSizeG,
       servingLabel: servingSizeG ? (product.serving_size?.slice(0, 60) ?? null) : null,
+      packageSizeG,
+      packageLabel: packageSizeG ? (product.quantity?.slice(0, 60) ?? null) : null,
+      basis: liquid ? "100ml" : "100g",
       allergens: [...allergens].sort(),
       dietClass: dietFromAnalysis(product.ingredients_analysis_tags ?? [], name),
       aisle: aisleFromCategories(product.categories_tags ?? []),
