@@ -98,6 +98,14 @@ appliquées : la RLS, les déclencheurs et les contraintes sont donc réels. La
 doublure n'est pas livrée avec le projet. La phase 2 a par ailleurs été
 validée sur un vrai projet Supabase (inscription, e-mail, profil, déconnexion).
 
+## Caméra du scan (correctif du 14 octobre)
+
+Défaut signalé par Moh : la caméra s'allumait et s'éteignait en boucle. Cause :
+la lecture redémarrait à chaque nouvel affichage du formulaire. Test ajouté :
+fausse caméra filmant une scène sans code-barres pendant 5 s, ouvertures de
+caméra comptées — 63 avant le correctif, 1 après ; arrêt puis relance manuels
+vérifiés ; le scan complet (lecture, import, portions) repasse.
+
 ## Retours de Moh du 14 octobre (30 étapes, ordinateur et mobile)
 
 - **Objectif** « perdre du poids et prendre du muscle » choisi à l'inscription

@@ -33,6 +33,13 @@ export function BarcodeForm({
   const [ready, setReady] = useState(false);
   const [cameraError, setCameraError] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+  // Dernière version du formulaire, lue par la boucle de lecture sans la
+  // relancer : la caméra ne doit s'ouvrir qu'une fois par scan (sinon elle
+  // s'éteint et se rallume à chaque nouvel affichage).
+  const latest = useRef({ form, onSubmit });
+  useEffect(() => {
+    latest.current = { form, onSubmit };
+  });
 
   // Après l'hydratation (le serveur ne connaît pas le navigateur) : caméra
   // disponible ? Si l'accès a déjà été accordé, le scan démarre tout seul.
@@ -64,14 +71,14 @@ export function BarcodeForm({
         const codes = await detector.detect(video);
         const code = codes[0]?.rawValue;
         if (code) {
-          form.setValue("barcode", code);
+          latest.current.form.setValue("barcode", code);
           try {
             navigator.vibrate?.(80);
           } catch {
             // Vibration indisponible.
           }
           setScanning(false);
-          void onSubmit();
+          void latest.current.onSubmit();
           return;
         }
       } catch {
@@ -111,7 +118,7 @@ export function BarcodeForm({
       if (timer) clearTimeout(timer);
       stream?.getTracks().forEach((track) => track.stop());
     };
-  }, [scanning, form, onSubmit]);
+  }, [scanning]);
 
   return (
     <FormProvider {...form}>
