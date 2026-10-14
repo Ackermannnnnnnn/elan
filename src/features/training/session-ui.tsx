@@ -1,17 +1,10 @@
 "use client";
 
 import { Check, Pause, Play, SkipForward, Timer, Volume2, VolumeX, X } from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
-import {
-  createContext,
-  type ReactNode,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { FormProvider } from "react-hook-form";
 import { useFieldError } from "@/components/forms/fields";
 import { SubmitButton } from "@/components/forms/submit-button";
@@ -21,8 +14,22 @@ import { Button } from "@/components/ui/button";
 import { UnitInput } from "@/components/ui/unit-input";
 import type { ActionResult } from "@/lib/action-result";
 import { cn } from "@/lib/utils";
+import type { PlanItem } from "@/domain/session-flow";
 import { restAlarmEnabled, scheduleRestAlarm } from "@/features/notifications/push-client";
+import {
+  adjust,
+  cancelSet,
+  getServerSnapshot,
+  getSnapshot,
+  setOverride,
+  setPlan,
+  startAfterSet,
+  stepFor,
+  stop,
+  subscribe,
+} from "./rest-timer-store";
 import { type SetFormValues, setSchema } from "./schemas";
+import { sessionUrl } from "./urls";
 
 const clock = (totalSeconds: number) => {
   const seconds = Math.max(0, Math.ceil(totalSeconds));
@@ -96,190 +103,145 @@ const vibrate = (pattern: number[]) => {
 
 // --- Minuteur de repos ------------------------------------------------------------------
 
-export type AfterSetCue =
-  | {
-      kind: "rest";
-      seconds: number;
-      next: string | null;
-      /**
-       * Exercices dont le repos décide (un seul, ou tout le superset). Un repos
-       * changé à l'instant (pas encore rechargé depuis le serveur) est pris en compte.
-       */
-      sources?: { id: string; seconds: number | null }[];
-    }
-  | { kind: "chain"; next: string }
-  | { kind: "none" };
-
-type TimerState =
-  | { kind: "rest"; endsAt: number; total: number; next: string | null }
-  | { kind: "chain"; next: string; at: number };
-
-type RestContext = {
-  start: (cue: AfterSetCue) => void;
-  stop: () => void;
-  /** Repos choisi à l'instant pour un exercice de la séance. */
-  setOverride: (id: string, seconds: number) => void;
-};
-const Rest = createContext<RestContext>({
-  start: () => {},
-  stop: () => {},
-  setOverride: () => {},
-});
+const useRestTimer = () => useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
 /** Pour le sélecteur de repos : le minuteur utilise aussitôt le nouveau temps. */
-export const useRestOverride = () => useContext(Rest).setOverride;
+export const useRestOverride = () => setOverride;
+
+/** Transmet au minuteur le plan actuel de la séance (ordre, séries faites). */
+export function SessionPlanSync({ sessionId, plan }: { sessionId: string; plan: PlanItem[] }) {
+  const serialized = JSON.stringify(plan);
+  useEffect(() => {
+    setPlan(sessionId, JSON.parse(serialized) as PlanItem[]);
+  }, [sessionId, serialized]);
+  return null;
+}
+
+/** Notification locale de secours (application en arrière-plan, sans notification serveur). */
+async function localRestNotification(title: string, body: string, url: string) {
+  try {
+    if (!("serviceWorker" in navigator) || Notification.permission !== "granted") return;
+    const registration = await navigator.serviceWorker.getRegistration("/");
+    await registration?.showNotification(title, {
+      body,
+      tag: "elan-rest",
+      icon: "/icons/icon-192.png",
+      badge: "/icons/badge-96.png",
+      data: { url },
+    });
+  } catch {
+    // Notifications indisponibles : la barre, le son et la vibration restent.
+  }
+}
 
 /**
- * Minuteur de repos partagé par toute la séance : grande barre fixée en bas de
- * l'écran (au-dessus de la navigation), ±15 s, passer, bips 3-2-1 et vibration
- * à la fin. Il repose sur l'heure de fin, donc reste juste si l'écran s'éteint
- * ou si la page est rechargée.
+ * Minuteur de repos de TOUTE l'application (monté dans la mise en page) :
+ * grande barre fixée en bas de l'écran, ±15 s, passer, bips 3-2-1 et
+ * vibration à la fin, même si l'on a quitté la page de la séance. Il repose
+ * sur l'heure de fin, donc reste juste si l'écran s'éteint ou si la page est
+ * rechargée. Fin de repos téléphone verrouillé : notification du serveur si
+ * elle est activée sur l'appareil, sinon notification locale si l'application
+ * est en arrière-plan.
  */
-export function RestTimerProvider({
-  sessionId,
-  children,
-}: {
-  sessionId: string;
-  children: ReactNode;
-}) {
+export function RestTimerHost() {
   const t = useTranslations("Training.session");
-  const key = `elan.rest.${sessionId}`;
-  const [state, setState] = useState<TimerState | null>(null);
+  const tPush = useTranslations("Push.rest");
+  const pathname = usePathname();
+  const state = useRestTimer();
+  const active = state.active;
   const [now, setNow] = useState(() => Date.now());
   const [sound, setSound] = useState(true);
   const lastCue = useRef<number | null>(null);
-  const finishedRef = useRef(false);
-  const overrides = useRef(new Map<string, number>());
-  const setOverride = useCallback((id: string, seconds: number) => {
-    overrides.current.set(id, seconds);
-  }, []);
+  const finishedRef = useRef<string | null>(null);
+  const alarm = useRef<string | null>(null);
 
-  // Reprise après rechargement, réglage du son.
+  // Réglage du son ; le son se débloque au premier geste (exigé par les mobiles).
   useEffect(() => {
-    const saved = storage.get(key);
-    const muted = storage.get("elan.rest.muted") === "1";
-    const frame = requestAnimationFrame(() => {
-      setSound(!muted);
-      if (!saved) return;
-      try {
-        const parsed = JSON.parse(saved) as TimerState;
-        if (parsed.kind === "rest" && parsed.endsAt > Date.now() - 60_000) setState(parsed);
-      } catch {
-        storage.set(key, null);
-      }
-    });
+    const frame = requestAnimationFrame(() => setSound(storage.get("elan.rest.muted") !== "1"));
     const unlock = () => unlockAudio();
     window.addEventListener("pointerdown", unlock);
     return () => {
       cancelAnimationFrame(frame);
       window.removeEventListener("pointerdown", unlock);
     };
-  }, [key]);
+  }, []);
 
   useEffect(() => {
-    if (!state) return;
+    if (!active) return;
     const timer = setInterval(() => setNow(Date.now()), 250);
     return () => clearInterval(timer);
-  }, [state]);
+  }, [active]);
 
-  // Notification de fin de repos (écran verrouillé), si activée sur cet appareil.
-  const alarmPending = useRef(false);
-  const syncAlarm = useCallback(
-    (next: TimerState | null) => {
-      if (next?.kind === "rest") {
-        if (!restAlarmEnabled()) return;
-        const seconds = Math.round((next.endsAt - Date.now()) / 1000);
-        if (seconds < 1) return;
-        alarmPending.current = true;
-        scheduleRestAlarm({ seconds, detail: next.next, sessionId });
-      } else if (alarmPending.current) {
-        alarmPending.current = false;
-        scheduleRestAlarm(null);
-      }
-    },
-    [sessionId],
-  );
+  const step = active && active.kind !== "finished" ? stepFor(state, active.from) : null;
+  const next = step && step.kind !== "finished" ? step.next : null;
+  const nextLabel = next ? t("nextSet", { name: next.name, number: next.setNumber }) : null;
+  const sessionHref = active ? sessionUrl(active.sessionId) : null;
+  const onSessionPage = sessionHref !== null && pathname === sessionHref;
 
-  const save = useCallback(
-    (next: TimerState | null) => {
-      setState(next);
-      setNow(Date.now());
-      lastCue.current = null;
-      finishedRef.current = false;
-      storage.set(key, next && next.kind === "rest" ? JSON.stringify(next) : null);
-      syncAlarm(next);
-    },
-    [key, syncAlarm],
-  );
-
-  const start = useCallback(
-    (cue: AfterSetCue) => {
-      unlockAudio();
-      const seconds =
-        cue.kind === "rest" && cue.sources
-          ? Math.max(
-              0,
-              ...cue.sources.map(
-                (source) => overrides.current.get(source.id) ?? source.seconds ?? 0,
-              ),
-            )
-          : cue.kind === "rest"
-            ? cue.seconds
-            : 0;
-      if (cue.kind === "rest" && seconds > 0) {
-        save({
-          kind: "rest",
-          endsAt: Date.now() + seconds * 1000,
-          total: seconds,
-          next: cue.next,
-        });
-      } else if (cue.kind === "chain") {
-        save({ kind: "chain", next: cue.next, at: Date.now() });
-      } else {
-        save(null);
-      }
-    },
-    [save],
-  );
-  const stop = useCallback(() => save(null), [save]);
-  const value = useMemo(() => ({ start, stop, setOverride }), [start, stop, setOverride]);
-
-  const remaining = state?.kind === "rest" ? (state.endsAt - now) / 1000 : 0;
-  const finished = state?.kind === "rest" && remaining <= 0;
-
-  // Bips 3-2-1, puis bip long + vibration à la fin.
+  // Un repos = une alarme serveur (si activée sur l'appareil), annulée si on passe le repos.
+  const restKey = active?.kind === "rest" ? `${active.sessionId}:${active.endsAt}` : null;
   useEffect(() => {
-    if (state?.kind !== "rest") return;
+    if (active?.kind === "rest" && restKey) {
+      if (alarm.current === restKey || !restAlarmEnabled()) return;
+      const seconds = Math.round((active.endsAt - Date.now()) / 1000);
+      if (seconds < 1) return;
+      alarm.current = restKey;
+      scheduleRestAlarm({ seconds, detail: nextLabel, sessionId: active.sessionId });
+    } else if (alarm.current) {
+      const previous = alarm.current;
+      alarm.current = null;
+      // Repos terminé normalement : l'alarme est partie d'elle-même.
+      if (finishedRef.current !== previous) scheduleRestAlarm(null);
+    }
+    // nextLabel : seulement le texte de l'alarme au moment du départ.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [restKey]);
+
+  // `now` peut dater d'avant le départ du repos (jusqu'au prochain tic) : jamais plus que le total.
+  const remaining =
+    active?.kind === "rest" ? Math.min(active.total, (active.endsAt - now) / 1000) : 0;
+  const finished = active?.kind === "rest" && remaining <= 0;
+
+  // Bips 3-2-1, puis bip long + vibration (et notification de secours) à la fin.
+  useEffect(() => {
+    if (active?.kind !== "rest" || !restKey) return;
     const second = Math.ceil(remaining);
     if (remaining > 0 && second <= 3 && second >= 1 && lastCue.current !== second) {
       lastCue.current = second;
       if (sound) beep(660, 0.12);
     }
-    if (remaining <= 0 && !finishedRef.current) {
-      finishedRef.current = true;
-      // L'alarme du serveur part d'elle-même : plus rien à annuler.
-      alarmPending.current = false;
+    if (remaining <= 0 && finishedRef.current !== restKey) {
+      finishedRef.current = restKey;
+      lastCue.current = null;
       if (sound) {
         beep(880, 0.35, 0.35);
         setTimeout(() => beep(880, 0.35, 0.35), 450);
       }
       vibrate([300, 150, 300]);
+      // Sans notification serveur : notification locale si l'application est en arrière-plan.
+      if (document.visibilityState === "hidden" && alarm.current !== restKey) {
+        void localRestNotification(
+          tPush("title"),
+          nextLabel ? tPush("bodyWithDetail", { detail: nextLabel }) : tPush("body"),
+          sessionUrl(active.sessionId),
+        );
+      }
     }
-  }, [remaining, sound, state]);
+  }, [active, nextLabel, remaining, restKey, sound, tPush]);
 
-  // Repos fini depuis longtemps ou enchaînement affiché : on range la barre.
+  // Repos fini depuis longtemps, enchaînement ou fin affichés : on range la barre.
   useEffect(() => {
-    if (!state) return;
-    const age = state.kind === "rest" ? now - state.endsAt : now - state.at;
-    const limit = state.kind === "rest" ? 45_000 : 8_000;
-    if (age > limit && (state.kind === "chain" || finished)) {
-      const frame = requestAnimationFrame(() => save(null));
+    if (!active) return;
+    const age = active.kind === "rest" ? now - active.endsAt : now - active.at;
+    const limit = active.kind === "rest" ? 45_000 : active.kind === "chain" ? 8_000 : 60_000;
+    if (age > limit && (active.kind !== "rest" || finished)) {
+      const frame = requestAnimationFrame(() => stop());
       return () => cancelAnimationFrame(frame);
     }
-  }, [finished, now, save, state]);
+  }, [active, finished, now]);
 
   // Titre de l'onglet : le décompte reste visible dans la liste des onglets.
-  const label = state?.kind === "rest" && !finished ? clock(remaining) : null;
+  const label = active?.kind === "rest" && !finished ? clock(remaining) : null;
   useEffect(() => {
     if (!label) return;
     const original = document.title;
@@ -289,15 +251,6 @@ export function RestTimerProvider({
     };
   }, [label, t]);
 
-  const adjust = (delta: number) => {
-    if (state?.kind !== "rest") return;
-    const endsAt = Math.max(Date.now() + 1000, state.endsAt + delta * 1000);
-    save({
-      ...state,
-      endsAt,
-      total: Math.max(state.total, Math.round((endsAt - Date.now()) / 1000)),
-    });
-  };
   const toggleSound = () => {
     unlockAudio();
     setSound((current) => {
@@ -306,135 +259,155 @@ export function RestTimerProvider({
     });
   };
 
+  if (!active) return null;
+  const success = active.kind !== "rest" || finished;
+
   return (
-    <Rest.Provider value={value}>
-      {children}
-      {state ? <div aria-hidden="true" className="h-36" /> : null}
-      {state ? (
-        <div
+    <>
+      <div aria-hidden="true" className="h-36" />
+      <div
+        className={cn(
+          "fixed inset-x-0 bottom-[calc(4rem+env(safe-area-inset-bottom))] z-30 px-3 pb-2",
+          "lg:inset-x-auto lg:right-8 lg:bottom-6 lg:w-[26rem] lg:px-0 lg:pb-0",
+        )}
+      >
+        <section
+          aria-label={t("restTimer")}
           className={cn(
-            "fixed inset-x-0 bottom-[calc(4rem+env(safe-area-inset-bottom))] z-30 px-3 pb-2",
-            "lg:inset-x-auto lg:right-8 lg:bottom-6 lg:w-[26rem] lg:px-0 lg:pb-0",
+            "overflow-hidden rounded-card shadow-lg ring-1 ring-black/5",
+            success ? "bg-success text-primary-foreground" : "bg-primary text-primary-foreground",
           )}
         >
-          <section
-            aria-label={t("restTimer")}
-            className={cn(
-              "overflow-hidden rounded-card shadow-lg ring-1 ring-black/5",
-              state.kind === "chain" || finished
-                ? "bg-success text-primary-foreground"
-                : "bg-primary text-primary-foreground",
-            )}
-          >
-            {state.kind === "rest" && !finished ? (
-              <div
-                className="h-1.5 bg-white/70 transition-[width] duration-300 ease-linear"
-                style={{ width: `${Math.max(0, Math.min(100, (remaining / state.total) * 100))}%` }}
-              />
-            ) : null}
-            <div className="flex items-center gap-3 px-4 py-3">
-              <div className="min-w-0 flex-1">
-                {state.kind === "chain" ? (
-                  <>
-                    <p className="text-sm font-semibold opacity-90">{t("chainNow")}</p>
-                    <p className="truncate text-xl font-bold">{state.next}</p>
-                  </>
-                ) : finished ? (
-                  <>
-                    <p role="status" className="text-xl font-bold">
-                      {t("restDone")}
+          {active.kind === "rest" && !finished ? (
+            <div
+              className="h-1.5 bg-white/70 transition-[width] duration-300 ease-linear"
+              style={{ width: `${Math.max(0, Math.min(100, (remaining / active.total) * 100))}%` }}
+            />
+          ) : null}
+          <div className="flex items-center gap-3 px-4 py-3">
+            <div className="min-w-0 flex-1">
+              {active.kind === "finished" ? (
+                <>
+                  <p role="status" className="text-xl font-bold">
+                    {t("allDone")}
+                  </p>
+                  <p className="text-sm font-medium opacity-90">{t("allDoneHint")}</p>
+                </>
+              ) : active.kind === "chain" ? (
+                <>
+                  <p className="text-sm font-semibold opacity-90">{t("chainNow")}</p>
+                  <p className="truncate text-xl font-bold">{nextLabel}</p>
+                </>
+              ) : finished ? (
+                <>
+                  <p role="status" className="text-xl font-bold">
+                    {t("restDone")}
+                  </p>
+                  {nextLabel ? (
+                    <p className="truncate text-sm font-medium opacity-90">
+                      {t("nextUp", { name: nextLabel })}
                     </p>
-                    {state.next ? (
-                      <p className="truncate text-sm font-medium opacity-90">
-                        {t("nextUp", { name: state.next })}
-                      </p>
-                    ) : null}
-                  </>
-                ) : (
-                  <>
-                    <p className="flex items-center gap-1.5 text-sm font-semibold opacity-90">
-                      <Timer aria-hidden="true" className="size-4" />
-                      {t("restShort")}
+                  ) : null}
+                </>
+              ) : (
+                <>
+                  <p className="flex items-center gap-1.5 text-sm font-semibold opacity-90">
+                    <Timer aria-hidden="true" className="size-4" />
+                    {t("restShort")}
+                  </p>
+                  <p
+                    className="text-5xl leading-none font-bold tabular-nums"
+                    role="timer"
+                    aria-label={t("rest", { time: clock(remaining) })}
+                  >
+                    {clock(remaining)}
+                  </p>
+                  {nextLabel ? (
+                    <p className="mt-1 truncate text-sm font-medium opacity-90">
+                      {t("nextUp", { name: nextLabel })}
                     </p>
-                    <p
-                      className="text-5xl leading-none font-bold tabular-nums"
-                      role="timer"
-                      aria-label={t("rest", { time: clock(remaining) })}
-                    >
-                      {clock(remaining)}
-                    </p>
-                    {state.next ? (
-                      <p className="mt-1 truncate text-sm font-medium opacity-90">
-                        {t("nextUp", { name: state.next })}
-                      </p>
-                    ) : null}
-                  </>
-                )}
+                  ) : null}
+                </>
+              )}
+              {!onSessionPage && sessionHref ? (
+                <Link
+                  href={sessionHref}
+                  className="mt-1 inline-flex items-center gap-1 text-sm font-semibold underline underline-offset-4"
+                >
+                  {t("backToSession")}
+                </Link>
+              ) : active.kind === "finished" && sessionHref ? (
+                <a
+                  href="#finish"
+                  className="mt-1 inline-flex items-center gap-1 text-sm font-semibold underline underline-offset-4"
+                >
+                  {t("goFinish")}
+                </a>
+              ) : null}
+            </div>
+            <div className="flex shrink-0 flex-col items-end gap-1.5">
+              <div className="flex items-center gap-1">
+                <Button
+                  type="button"
+                  size="icon"
+                  variant="ghost"
+                  onClick={toggleSound}
+                  aria-pressed={sound}
+                  aria-label={sound ? t("soundOff") : t("soundOn")}
+                  className="size-9 text-inherit hover:bg-black/10"
+                >
+                  {sound ? <Volume2 aria-hidden="true" /> : <VolumeX aria-hidden="true" />}
+                </Button>
+                <Button
+                  type="button"
+                  size="icon"
+                  variant="ghost"
+                  onClick={stop}
+                  aria-label={t("restClose")}
+                  className="size-9 text-inherit hover:bg-black/10"
+                >
+                  <X aria-hidden="true" />
+                </Button>
               </div>
-              <div className="flex shrink-0 flex-col items-end gap-1.5">
+              {active.kind === "rest" && !finished ? (
                 <div className="flex items-center gap-1">
                   <Button
                     type="button"
-                    size="icon"
+                    size="sm"
                     variant="ghost"
-                    onClick={toggleSound}
-                    aria-pressed={sound}
-                    aria-label={sound ? t("soundOff") : t("soundOn")}
-                    className="size-9 text-inherit hover:bg-black/10"
+                    onClick={() => adjust(-15)}
+                    aria-label={t("restLess")}
+                    className="bg-black/10 px-2.5 text-inherit tabular-nums hover:bg-black/20"
                   >
-                    {sound ? <Volume2 aria-hidden="true" /> : <VolumeX aria-hidden="true" />}
+                    −15
                   </Button>
                   <Button
                     type="button"
-                    size="icon"
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => adjust(15)}
+                    aria-label={t("restMore")}
+                    className="bg-black/10 px-2.5 text-inherit tabular-nums hover:bg-black/20"
+                  >
+                    +15
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
                     variant="ghost"
                     onClick={stop}
-                    aria-label={t("restClose")}
-                    className="size-9 text-inherit hover:bg-black/10"
+                    aria-label={t("restSkip")}
+                    className="bg-black/10 px-2.5 text-inherit hover:bg-black/20"
                   >
-                    <X aria-hidden="true" />
+                    <SkipForward aria-hidden="true" />
                   </Button>
                 </div>
-                {state.kind === "rest" && !finished ? (
-                  <div className="flex items-center gap-1">
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => adjust(-15)}
-                      aria-label={t("restLess")}
-                      className="bg-black/10 px-2.5 text-inherit tabular-nums hover:bg-black/20"
-                    >
-                      −15
-                    </Button>
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => adjust(15)}
-                      aria-label={t("restMore")}
-                      className="bg-black/10 px-2.5 text-inherit tabular-nums hover:bg-black/20"
-                    >
-                      +15
-                    </Button>
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="ghost"
-                      onClick={stop}
-                      aria-label={t("restSkip")}
-                      className="bg-black/10 px-2.5 text-inherit hover:bg-black/20"
-                    >
-                      <SkipForward aria-hidden="true" />
-                    </Button>
-                  </div>
-                ) : null}
-              </div>
+              ) : null}
             </div>
-          </section>
-        </div>
-      ) : null}
-    </Rest.Provider>
+          </div>
+        </section>
+      </div>
+    </>
   );
 }
 
@@ -506,26 +479,30 @@ export function SetRow({
   setId,
   setNumber,
   timed,
+  perHand = false,
   done,
   initial,
   proposed,
-  after,
+  sessionId,
+  itemId,
   disabled,
   action,
 }: {
   setId: string;
   setNumber: number;
   timed: boolean;
+  /** Charge d'un haltère (« kg / bras »). */
+  perHand?: boolean;
   done: boolean;
   initial: SetFormValues;
   proposed: { weightKg: string; reps: string };
-  after: AfterSetCue;
+  sessionId: string;
+  itemId: string;
   disabled: boolean;
   action: (values: SetFormValues) => Promise<ActionResult<string>>;
 }) {
   const t = useTranslations("Training.session");
   const messages = useFormMessages();
-  const rest = useContext(Rest);
   // Affichage immédiat : la série passe au vert et le repos démarre sans
   // attendre le serveur ; en cas d'échec, on revient en arrière.
   const [optimistic, setOptimistic] = useState(false);
@@ -536,7 +513,7 @@ export function SetRow({
       const result = await action(values);
       if (!result.ok) {
         setOptimistic(false);
-        if (!done) rest.stop();
+        if (!done) cancelSet(sessionId, { itemId, setNumber });
       }
       return result;
     },
@@ -565,7 +542,7 @@ export function SetRow({
     const parsed = setSchema.safeParse(form.getValues());
     if (parsed.success && !done && !pending) {
       setOptimistic(true);
-      rest.start(after);
+      startAfterSet(sessionId, { itemId, setNumber });
     }
     return onSubmit(event);
   };
@@ -585,11 +562,13 @@ export function SetRow({
         </span>
         <div>
           <label htmlFor={weightId} className="sr-only">
-            {t("weightLabel", { number: setNumber })}
+            {perHand
+              ? t("weightLabelPerHand", { number: setNumber })
+              : t("weightLabel", { number: setNumber })}
           </label>
           <UnitInput
             id={weightId}
-            unit="kg"
+            unit={perHand ? t("kgPerHand") : "kg"}
             placeholder={proposed.weightKg}
             disabled={disabled}
             {...form.register("weightKg")}

@@ -2,6 +2,7 @@ import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { APP_NAME } from "@/config/app";
 import type { Database } from "@/types/database";
+import { forgetVerifiedSession } from "@/lib/auth/session";
 import { fail, getDb } from "./client";
 
 type TableName = keyof Database["public"]["Tables"];
@@ -114,6 +115,7 @@ export async function deleteAccount(password: string): Promise<"deleted" | "wron
   }
   const { error } = await supabase.rpc("delete_my_account");
   if (error) fail("deleteAccount", error, "accountDeleteFailed");
+  await forgetVerifiedSession();
   await supabase.auth.signOut({ scope: "local" });
   return "deleted";
 }

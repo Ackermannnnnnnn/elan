@@ -9,6 +9,7 @@ import { UserChip, UserChipSkeleton } from "@/components/layout/user-chip";
 import { ROUTES } from "@/config/routes";
 import { getOwnProfile } from "@/data/profile";
 import { ServiceWorkerRegistrar } from "@/features/notifications/service-worker";
+import { RestTimerHost } from "@/features/training/session-ui";
 import { requireUser } from "@/lib/auth/session";
 
 /**
@@ -62,6 +63,10 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
         >
           <Suspense fallback={<PageSkeleton />}>
             <AuthGate>{children}</AuthGate>
+          </Suspense>
+          {/* Minuteur de repos : visible sur toutes les pages pendant une séance. */}
+          <Suspense fallback={null}>
+            <RestTimerHost />
           </Suspense>
         </main>
       </div>

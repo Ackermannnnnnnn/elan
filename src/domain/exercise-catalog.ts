@@ -7,6 +7,10 @@
  * Zones sensibles : l'exercice n'est jamais proposé automatiquement à quelqu'un
  * qui a déclaré une gêne à cet endroit (déclaratif, jamais un diagnostic).
  * Exercice « chronométré » : les répétitions sont des secondes.
+ * Charge « par haltère » (`perHand`) : un haltère dans chaque main (ou un bras
+ * à la fois) — la charge saisie est celle d'UN haltère, affichée « kg / bras ».
+ * Sinon la charge est le total soulevé (barre chargée, machine, un seul haltère
+ * tenu à deux mains).
  */
 
 export const MUSCLES = [
@@ -80,6 +84,8 @@ export type CatalogExercise = {
   difficulty: Level;
   compound: boolean;
   timed?: boolean;
+  /** Charge indiquée par haltère (« kg / bras »). */
+  perHand?: boolean;
   caution: CautionArea[];
   instructions: string;
 };
@@ -110,6 +116,7 @@ export const EXERCISE_CATALOG: readonly CatalogExercise[] = [
     equipment: ["dumbbells", "bench"],
     difficulty: "beginner",
     compound: true,
+    perHand: true,
     caution: ["shoulder"],
     instructions:
       "Allongé sur le banc, haltères au-dessus de la poitrine. Descends en contrôlant jusqu'à sentir l'étirement des pectoraux, coudes légèrement rentrés, puis remonte en rapprochant les haltères.",
@@ -123,6 +130,7 @@ export const EXERCISE_CATALOG: readonly CatalogExercise[] = [
     equipment: ["dumbbells", "bench"],
     difficulty: "intermediate",
     compound: true,
+    perHand: true,
     caution: ["shoulder"],
     instructions:
       "Banc incliné à 30°. Descends les haltères vers le haut de la poitrine, puis pousse vers le haut. Garde les omoplates serrées et le bas du dos en contact avec le banc.",
@@ -175,6 +183,7 @@ export const EXERCISE_CATALOG: readonly CatalogExercise[] = [
     equipment: ["dumbbells", "bench"],
     difficulty: "intermediate",
     compound: false,
+    perHand: true,
     caution: ["shoulder"],
     instructions:
       "Allongé, bras au-dessus de la poitrine, coudes légèrement fléchis. Ouvre les bras en arc de cercle jusqu'à un étirement confortable, puis referme comme pour enlacer un arbre.",
@@ -294,6 +303,7 @@ export const EXERCISE_CATALOG: readonly CatalogExercise[] = [
     equipment: ["dumbbells", "bench"],
     difficulty: "beginner",
     compound: true,
+    perHand: true,
     caution: [],
     instructions:
       "Une main et un genou sur le banc, dos plat. Tire l'haltère vers la hanche en gardant le coude près du corps, puis redescends bras tendu.",
@@ -374,6 +384,7 @@ export const EXERCISE_CATALOG: readonly CatalogExercise[] = [
     equipment: ["dumbbells"],
     difficulty: "beginner",
     compound: true,
+    perHand: true,
     caution: ["shoulder"],
     instructions:
       "Assis ou debout, haltères à hauteur des épaules. Pousse vers le haut jusqu'à bras presque tendus, puis redescends jusqu'aux oreilles.",
@@ -426,6 +437,7 @@ export const EXERCISE_CATALOG: readonly CatalogExercise[] = [
     equipment: ["dumbbells"],
     difficulty: "beginner",
     compound: false,
+    perHand: true,
     caution: [],
     instructions:
       "Debout, haltères le long du corps. Monte les bras sur les côtés jusqu'à hauteur des épaules, coudes légèrement fléchis, sans élan, puis redescends lentement.",
@@ -452,6 +464,7 @@ export const EXERCISE_CATALOG: readonly CatalogExercise[] = [
     equipment: ["dumbbells"],
     difficulty: "beginner",
     compound: false,
+    perHand: true,
     caution: ["lower_back"],
     instructions:
       "Buste penché en avant, dos plat. Écarte les bras sur les côtés en serrant les omoplates, coudes légèrement fléchis, puis redescends.",
@@ -467,6 +480,7 @@ export const EXERCISE_CATALOG: readonly CatalogExercise[] = [
     equipment: ["dumbbells"],
     difficulty: "beginner",
     compound: false,
+    perHand: true,
     caution: [],
     instructions:
       "Debout, coudes collés au corps. Fléchis les bras en tournant les paumes vers le haut, puis redescends complètement sans balancer.",
@@ -493,6 +507,7 @@ export const EXERCISE_CATALOG: readonly CatalogExercise[] = [
     equipment: ["dumbbells"],
     difficulty: "beginner",
     compound: false,
+    perHand: true,
     caution: [],
     instructions:
       "Paumes face à face, comme pour tenir un marteau. Fléchis les bras sans décoller les coudes, puis redescends.",
@@ -664,6 +679,7 @@ export const EXERCISE_CATALOG: readonly CatalogExercise[] = [
     equipment: ["dumbbells", "bench"],
     difficulty: "intermediate",
     compound: true,
+    perHand: true,
     caution: ["knee"],
     instructions:
       "Pied arrière posé sur le banc, haltères en main. Descends le genou arrière vers le sol, buste droit, puis remonte en poussant sur la jambe avant.",
@@ -690,6 +706,7 @@ export const EXERCISE_CATALOG: readonly CatalogExercise[] = [
     equipment: ["dumbbells"],
     difficulty: "intermediate",
     compound: true,
+    perHand: true,
     caution: ["knee"],
     instructions:
       "Haltères en main, avance en fentes : genou arrière près du sol, genou avant au-dessus de la cheville.",
@@ -758,6 +775,7 @@ export const EXERCISE_CATALOG: readonly CatalogExercise[] = [
     equipment: ["dumbbells"],
     difficulty: "beginner",
     compound: true,
+    perHand: true,
     caution: ["lower_back"],
     instructions:
       "Haltères devant les cuisses. Bascule le buste en poussant les hanches en arrière, dos plat, jusqu'à mi-tibia, puis remonte en serrant les fessiers.",
@@ -975,6 +993,7 @@ export const EXERCISE_CATALOG: readonly CatalogExercise[] = [
     equipment: ["dumbbells"],
     difficulty: "beginner",
     compound: true,
+    perHand: true,
     timed: true,
     caution: [],
     instructions:
@@ -1003,6 +1022,7 @@ export const EXERCISE_CATALOG: readonly CatalogExercise[] = [
     equipment: ["dumbbells"],
     difficulty: "beginner",
     compound: false,
+    perHand: true,
     caution: ["elbow"],
     instructions:
       "Buste penché, dos plat, coude collé au corps et bras parallèle au sol. Tends le bras vers l'arrière sans bouger le coude, marque une pause, reviens lentement.",
@@ -1081,6 +1101,7 @@ export const EXERCISE_CATALOG: readonly CatalogExercise[] = [
     equipment: ["dumbbells", "bench"],
     difficulty: "intermediate",
     compound: false,
+    perHand: true,
     caution: ["shoulder"],
     instructions:
       "Assis sur un banc incliné, bras tendus vers le sol. Fléchis les coudes sans les avancer, serre en haut, redescends complètement.",
@@ -1107,6 +1128,7 @@ export const EXERCISE_CATALOG: readonly CatalogExercise[] = [
     equipment: ["dumbbells", "bench"],
     difficulty: "beginner",
     compound: false,
+    perHand: true,
     caution: [],
     instructions:
       "Assis, coude appuyé à l'intérieur de la cuisse. Monte l'haltère vers l'épaule sans bouger le bras, puis redescends lentement.",
@@ -1146,6 +1168,7 @@ export const EXERCISE_CATALOG: readonly CatalogExercise[] = [
     equipment: ["dumbbells", "bench"],
     difficulty: "beginner",
     compound: false,
+    perHand: true,
     caution: ["wrist"],
     instructions:
       "Avant-bras posés sur le banc, paumes vers le haut, poignets dans le vide. Enroule les poignets vers le haut puis laisse redescendre lentement.",
@@ -1302,6 +1325,7 @@ export const EXERCISE_CATALOG: readonly CatalogExercise[] = [
     equipment: ["dumbbells", "bench"],
     difficulty: "beginner",
     compound: true,
+    perHand: true,
     caution: [],
     instructions:
       "Allongé sur le ventre sur un banc incliné, haltères vers le sol. Tire les coudes vers l'arrière en serrant les omoplates, puis redescends.",
@@ -1341,6 +1365,7 @@ export const EXERCISE_CATALOG: readonly CatalogExercise[] = [
     equipment: ["dumbbells"],
     difficulty: "beginner",
     compound: false,
+    perHand: true,
     caution: ["neck"],
     instructions:
       "Debout, haltères le long du corps. Monte les épaules vers les oreilles sans rouler, marque une pause, redescends lentement.",
@@ -1367,6 +1392,7 @@ export const EXERCISE_CATALOG: readonly CatalogExercise[] = [
     equipment: ["dumbbells"],
     difficulty: "intermediate",
     compound: true,
+    perHand: true,
     caution: ["shoulder"],
     instructions:
       "Assis, haltères devant le visage paumes vers toi. Pousse vers le haut en tournant les paumes vers l'avant, puis redescends en refaisant la rotation.",
@@ -1380,6 +1406,7 @@ export const EXERCISE_CATALOG: readonly CatalogExercise[] = [
     equipment: ["dumbbells"],
     difficulty: "beginner",
     compound: false,
+    perHand: true,
     caution: ["shoulder"],
     instructions:
       "Debout, haltères devant les cuisses. Monte les bras tendus devant toi jusqu'à hauteur des épaules, puis redescends lentement.",

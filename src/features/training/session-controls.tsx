@@ -10,12 +10,15 @@ import { useFormMessages } from "@/components/forms/use-form-messages";
 import { Alert } from "@/components/ui/alert";
 import type { ActionResult } from "@/lib/action-result";
 import { discardSessionAction } from "./actions";
+import { stopFor } from "./rest-timer-store";
 import { type FinishFormValues, finishSchema, type NoteFormValues, noteSchema } from "./schemas";
 
 /** Fin de séance : ressenti facultatif (1 à 10), séries non validées retirées. */
 export function FinishForm({
+  sessionId,
   action,
 }: {
+  sessionId: string;
   action: (values: FinishFormValues) => Promise<ActionResult<string>>;
 }) {
   const t = useTranslations("Training.session");
@@ -23,7 +26,11 @@ export function FinishForm({
   const { form, onSubmit, pending, formError } = useActionForm({
     schema: finishSchema,
     defaultValues: { perceivedEffort: "" },
-    action,
+    action: (values) => {
+      // Plus de repos à décompter une fois la séance terminée.
+      stopFor(sessionId);
+      return action(values);
+    },
   });
   return (
     <FormProvider {...form}>
@@ -59,7 +66,10 @@ export function DiscardSessionButton({ id }: { id: string }) {
       confirmLabel={t("discardConfirm")}
       cancelLabel={tCommon("cancel")}
       pendingLabel={tCommon("deleting")}
-      action={() => discardSessionAction(id)}
+      action={() => {
+        stopFor(id);
+        return discardSessionAction(id);
+      }}
     />
   );
 }

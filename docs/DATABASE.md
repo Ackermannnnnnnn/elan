@@ -44,6 +44,10 @@ protégées par la Row Level Security.
 | `…200000_session_plan` (13/10)           | Plan propre à chaque séance (`session_exercises` : ordre, objectifs, superset, exercice remplacé, note) repris des séances existantes ; supersets des séances types                                             |
 | `…120000_notifications` (14/10)          | Abonnements (`push_subscriptions`), alarme de fin de repos (`push_alarms`), rappels traités (`reminders.last_sent_on`), fonctions `private.due_*` et `push_tick`, tâches `pg_cron` (voir docs/NOTIFICATIONS.md) |
 | `…120100_delete_account` (14/10)         | Fonction `delete_my_account()` : supprime le compte connecté et toutes ses données (cascade)                                                                                                                    |
+| `…090000_session_speed` (15/10)          | Fonctions `swap_session_exercise` et `move_session_exercise` : changer ou déplacer un exercice de la séance en une transaction (un aller-retour)                                                                |
+| `…090100_exercise_load_basis` (15/10)    | `exercise_library.load_basis` : charge `total` ou `per_hand` (« kg/bras »)                                                                                                                                      |
+| `…090200_exercise_library_load_basis`    | Bibliothèque de référence mise à jour (fichier généré)                                                                                                                                                          |
+| `…090300_rest_alarm_test` (15/10)        | Alarme d'essai `rest_test` (bouton « Tester la fin de repos »)                                                                                                                                                  |
 | `…090000_flexible_schedule` (13/10)      | Planning souple : `workout_sessions.original_date` (occurrence déplacée, sautée ou faite un autre jour), une seule modification par occurrence, séance sautée à sa date                                         |
 
 ## Tables par domaine

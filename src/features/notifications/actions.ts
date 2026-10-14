@@ -1,12 +1,14 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { z } from "zod";
 import {
   deletePushSubscription,
   getPushSubscription,
   REMINDER_KINDS,
   saveReminders,
   savePushSubscription,
+  setRestAlarm,
 } from "@/data/notifications";
 import type { ActionResult } from "@/lib/action-result";
 import { getPushConfig } from "@/lib/push/config";
@@ -50,6 +52,17 @@ export async function testPushAction(endpoint: string): Promise<ActionResult<str
       return { ok: false, formError: "pushNotSubscribed" };
     }
     if (outcome === "failed") return { ok: false, formError: "pushFailed" };
+  });
+}
+
+/**
+ * Essai complet de la fin de repos : une vraie alarme dans 10 secondes, qui
+ * passe par la planification de Supabase (comme pendant une séance).
+ */
+export async function testRestAlarmAction(): Promise<ActionResult<string>> {
+  return runAction(z.undefined(), undefined, async () => {
+    if (!getPushConfig()) return { ok: false, formError: "pushNotConfigured" };
+    await setRestAlarm({ seconds: 10, detail: null, url: "/profile/notifications", test: true });
   });
 }
 

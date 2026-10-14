@@ -52,7 +52,10 @@ export default async function ExercisePage({ params }: PageProps<"/training/exer
     const value = weighted ? entry.summary.bestOneRepMax : entry.bestReps;
     return value === null || value === 0 ? [] : [{ key: entry.sessionId, date: entry.date, value }];
   });
-  const unit = weighted ? "kg" : exercise.is_timed ? "s" : t("repsUnit");
+  // Haltères (un dans chaque main) : charges et force estimée « par bras ».
+  const perHand = exercise.load_basis === "per_hand";
+  const kg = perHand ? t("kgPerHand") : "kg";
+  const unit = weighted ? kg : exercise.is_timed ? "s" : t("repsUnit");
 
   return (
     <>
@@ -118,6 +121,7 @@ export default async function ExercisePage({ params }: PageProps<"/training/exer
             <CardTitle>{t("progress")}</CardTitle>
             <p className="text-sm text-muted-foreground">
               {weighted ? t("progressWeighted") : t("progressReps")}
+              {weighted && perHand ? ` ${t("perHandNote")}` : ""}
             </p>
           </CardHeader>
           {points.length >= 2 ? (
@@ -169,7 +173,7 @@ export default async function ExercisePage({ params }: PageProps<"/training/exer
                           {entry.sets
                             .map((set) =>
                               set.weightKg
-                                ? `${number(set.weightKg)} × ${set.reps ?? 0}`
+                                ? `${number(set.weightKg)}${perHand ? ` ${kg}` : ""} × ${set.reps ?? 0}`
                                 : `${set.reps ?? 0}${exercise.is_timed ? " s" : ""}`,
                             )
                             .join(" · ")}
@@ -178,7 +182,7 @@ export default async function ExercisePage({ params }: PageProps<"/training/exer
                           <td className="py-2 text-right tabular-nums">
                             {summary.bestOneRepMax === null
                               ? "–"
-                              : `${number(summary.bestOneRepMax)} kg`}
+                              : `${number(summary.bestOneRepMax)} ${kg}`}
                           </td>
                         ) : null}
                       </tr>

@@ -93,3 +93,13 @@ export function summarizeSets(sets: readonly LoggedSet[]): {
   }
   return { bestOneRepMax, volumeKg: Math.round(volumeKg * 10) / 10, totalReps, bestSet };
 }
+
+/**
+ * Charge réellement soulevée pour le volume : un exercice « par bras » (un
+ * haltère dans chaque main) compte deux fois la charge saisie. La charge
+ * saisie, les objectifs et la force estimée restent, eux, « par bras ».
+ */
+export function liftedLoad(weightKg: number | null, loadBasis: string): number | null {
+  if (weightKg === null) return null;
+  return loadBasis === "per_hand" ? weightKg * 2 : weightKg;
+}

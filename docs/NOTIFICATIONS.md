@@ -29,6 +29,14 @@ Supabase pg_cron, toutes les 5 s / chaque minute
 Délai : la fin de repos arrive en général **0 à 7 secondes** après l'heure prévue
 (tâche toutes les 5 s + acheminement). Le minuteur à l'écran reste la référence.
 
+Le minuteur suit l'utilisateur dans **toute l'application** : en consultant
+l'historique d'un exercice ou le journal pendant le repos, la barre reste en
+bas de l'écran, bipe et vibre à la fin. Sans notifications serveur mais avec
+l'autorisation du navigateur, une notification locale part si l'application
+est en arrière-plan (pas si le téléphone a coupé la page). Jamais deux
+notifications pour la même fin de repos (même étiquette, et la locale n'est
+utilisée que sans la serveur).
+
 ## Limites à connaître
 
 - **iPhone** : les notifications web n'existent que pour l'application
@@ -60,7 +68,10 @@ Délai : la fin de repos arrive en général **0 à 7 secondes** après l'heure 
 
 3. Vercel → Deployments → Redeploy.
 4. Sur le téléphone : Profil → Rappels et notifications → Activer, puis
-   « Envoyer un essai ».
+   « Envoyer un essai » (vérifie les clés) et **« Tester la fin de repos »** :
+   une vraie alarme dans 10 secondes, qui passe par `pg_cron` et `pg_net`.
+   Verrouiller le téléphone aussitôt : si rien n'arrive, la planification
+   Supabase n'est pas en service (voir ci-dessous).
 
 Tant que l'étape 2 n'est pas faite, l'application affiche « notifications pas
 encore activées sur le serveur » et la base n'envoie rien.

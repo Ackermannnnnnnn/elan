@@ -234,7 +234,21 @@ débutant), « sans machine », « sans matériel ». Séries et repos sont cons
   d'origine ; les séries restantes (au moins une) passent au nouvel exercice,
   placé juste après. Objectif conservé, sauf passage répétitions ↔ secondes
   (nouvel objectif selon l'objectif et le niveau).
-- Déplacer un exercice (dont « faire plus tard ») le sort de son superset.
+- Déplacer un exercice (▲ ▼ sur sa carte, ou « faire plus tard ») le sort de
+  son superset ; les séries, charges et répétitions ne changent pas.
+- **Prochaine série** (`planAfterSet`), recalculée à partir de l'ordre ACTUEL
+  et des séries réellement faites (une série validée à l'instant compte déjà) :
+  la série suivante de l'exercice en cours ; sinon (exercice fini), la première
+  série non faite du PREMIER exercice de la séance, dans l'ordre, qui en a
+  encore ; un exercice terminé n'est jamais proposé. Superset : on enchaîne
+  avec le suivant du groupe qui a encore des séries ; un groupe fini renvoie au
+  premier exercice restant. Plus rien à faire : « Séance terminée ».
+- **Charge par bras** : pour les exercices avec un haltère dans chaque main (ou
+  un bras à la fois), la charge saisie et affichée est celle d'UN haltère
+  (« kg/bras ») : objectifs, progression (+2,5 kg par haltère) et force estimée
+  restent par bras. Seul le **volume** compte la charge réellement soulevée
+  (deux fois la charge saisie). Un haltère tenu à deux mains (goblet squat) ou
+  une barre : charge totale.
 - **Valeurs proposées** pour une série : celles de la dernière série validée de
   l'exercice dans la séance, sinon l'objectif du jour. Valider avec des champs
   vides enregistre ces valeurs.

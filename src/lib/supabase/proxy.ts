@@ -1,6 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { GUEST_ONLY_PATHS, PUBLIC_PATHS, ROUTES } from "@/config/routes";
+import { recallVerified, rememberVerified, sessionKeyFrom } from "@/lib/auth/verified-sessions";
 import { getSupabasePublicEnv } from "@/lib/env";
 import { ONBOARDED_COOKIE, ONBOARDED_COOKIE_OPTIONS } from "@/lib/onboarding-cookie";
 import type { Database } from "@/types/database";
@@ -56,10 +57,24 @@ export async function updateSession(request: NextRequest): Promise<NextResponse>
     },
   });
 
-  // Ne rien exécuter entre la création du client et getClaims() : c'est cet
-  // appel qui vérifie le jeton et rafraîchit la session si nécessaire.
-  const { data } = await supabase.auth.getClaims();
-  const userId = data?.claims?.sub;
+  // Session vérifiée il y a quelques secondes avec exactement ces cookies (et
+  // loin de son expiration) : inutile de refaire l'appel réseau. Sinon, ne rien
+  // exécuter entre la création du client et getClaims() : c'est cet appel qui
+  // vérifie le jeton et rafraîchit la session si nécessaire.
+  const sessionKey = sessionKeyFrom(request.cookies.getAll());
+  let userId = recallVerified(sessionKey)?.id;
+  if (!userId) {
+    const { data } = await supabase.auth.getClaims();
+    const claims = data?.claims;
+    userId = claims?.sub;
+    if (claims?.sub) {
+      rememberVerified(
+        sessionKey,
+        { id: claims.sub, email: typeof claims.email === "string" ? claims.email : null },
+        claims.exp,
+      );
+    }
+  }
   const isSignedIn = Boolean(userId);
 
   const redirectTo = (path: string, params?: Record<string, string>) => {

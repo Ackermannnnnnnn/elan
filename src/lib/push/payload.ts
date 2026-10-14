@@ -1,12 +1,21 @@
 import { z } from "zod";
 
 /** Types de notifications envoyées par l'application. */
-export const PUSH_KINDS = ["rest", "weigh_in", "meal_log", "workout", "meal_prep", "test"] as const;
+export const PUSH_KINDS = [
+  "rest",
+  "rest_test",
+  "weigh_in",
+  "meal_log",
+  "workout",
+  "meal_prep",
+  "test",
+] as const;
 export type PushKind = (typeof PUSH_KINDS)[number];
 
 /** Page ouverte en touchant la notification, quand le message n'en précise pas. */
 export const PUSH_DEFAULT_URL: Record<PushKind, string> = {
   rest: "/training",
+  rest_test: "/profile/notifications",
   weigh_in: "/progress#weight",
   meal_log: "/nutrition",
   workout: "/training",
@@ -43,6 +52,7 @@ export type PushRequest = z.infer<typeof pushRequestSchema>;
 /** Une alarme de repos doit arriver tout de suite ou pas du tout ; un rappel peut attendre. */
 export const PUSH_OPTIONS: Record<PushKind, { ttl: number; urgency: "high" | "normal" }> = {
   rest: { ttl: 60, urgency: "high" },
+  rest_test: { ttl: 60, urgency: "high" },
   weigh_in: { ttl: 3600, urgency: "normal" },
   meal_log: { ttl: 3600, urgency: "normal" },
   workout: { ttl: 3600, urgency: "normal" },

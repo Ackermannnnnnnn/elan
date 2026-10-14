@@ -82,6 +82,8 @@ export const ownExerciseSchema = z.object({
   primary: z.enum(MUSCLES),
   equipment: checkboxes(EQUIPMENT),
   kind: z.enum(["reps", "timed"]),
+  /** Un haltère dans chaque main (ou un bras à la fois) : charge « par bras ». */
+  perHand: z.boolean(),
   instructions: z
     .string()
     .trim()

@@ -200,8 +200,9 @@ export async function logSetAction(
 ): Promise<ActionResult<string>> {
   if (!uuid.safeParse(setId).success) return { ok: false, formError: "itemNotFound" };
   return runAction(setSchema, input, async (values) => {
-    await logSet({ setId, weightKg: values.weightKg, reps: values.reps });
-    refresh();
+    // Une série ne change que la page de la séance : inutile de tout recalculer.
+    const sessionId = await logSet({ setId, weightKg: values.weightKg, reps: values.reps });
+    revalidatePath(sessionUrl(sessionId));
   });
 }
 
@@ -517,7 +518,10 @@ export async function swapSessionExerciseAction(
     { itemId, exerciseId, inProgram },
     async (values) => {
       sessionId = await swapSessionExercise(values);
-      refresh();
+      // Seule la séance change (et la séance type si demandé) : rafraîchir toute
+      // l'application faisait aussi recalculer en arrière-plan la page quittée.
+      revalidatePath(sessionUrl(sessionId));
+      if (values.inProgram) revalidatePath(`${ROUTES.training}`, "layout");
     },
   );
   if (!result.ok) return result;
@@ -542,8 +546,7 @@ export async function moveSessionExerciseAction(
     }),
     { itemId, direction },
     async (values) => {
-      await moveSessionExercise(values.itemId, values.direction);
-      refresh();
+      revalidatePath(sessionUrl(await moveSessionExercise(values.itemId, values.direction)));
     },
   );
 }

@@ -41,6 +41,7 @@ export default async function NewExercisePage({
             primary: "chest",
             equipment: [],
             kind: "reps",
+            perHand: false,
             instructions: "",
           }}
           submitLabel={workoutId ? t("ownExercise.createAndAdd") : t("ownExercise.create")}

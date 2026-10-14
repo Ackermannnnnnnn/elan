@@ -81,6 +81,19 @@ export function OwnExerciseForm({
             {...form.register("kind")}
           />
         </ChoiceGroup>
+        <label className="flex items-start gap-3">
+          <input
+            type="checkbox"
+            className="mt-1 size-5 shrink-0 accent-primary"
+            {...form.register("perHand")}
+          />
+          <span>
+            <span className="block font-semibold">{t("ownExercise.perHand")}</span>
+            <span className="block text-sm text-muted-foreground">
+              {t("ownExercise.perHandHint")}
+            </span>
+          </span>
+        </label>
         <Field
           id="instructions"
           label={`${t("ownExercise.instructions")} (${tCommon("optional")})`}

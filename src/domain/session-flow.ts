@@ -91,3 +91,76 @@ export function proposedValues(
   if (previous) return { weightKg: previous.weightKg, reps: previous.reps };
   return target;
 }
+
+// --- Prochaine série, d'après l'état réel de la séance --------------------------------
+
+export type PlanSet = { setNumber: number; done: boolean };
+export type PlanItem = {
+  id: string;
+  name: string;
+  supersetWithNext: boolean;
+  /** Repos prévu après une série (secondes), null = pas de repos. */
+  restSeconds: number | null;
+  sets: readonly PlanSet[];
+};
+
+/** Série à faire ensuite. */
+export type NextSet = { itemId: string; name: string; setNumber: number };
+
+export type PlanStep =
+  /** Superset : enchaîner tout de suite, sans repos. */
+  | { kind: "chain"; next: NextSet }
+  /** Repos, puis la série indiquée. */
+  | { kind: "rest"; seconds: number; sources: string[]; next: NextSet }
+  /** Rien à attendre : la série suivante tout de suite (repos à 0). */
+  | { kind: "go"; next: NextSet }
+  /** Toutes les séries de la séance sont faites. */
+  | { kind: "finished" };
+
+/**
+ * Après la série `from` (considérée comme faite), que faire ? Règles
+ * (docs/CALCULS.md § Déroulé d'une séance) :
+ *  · on ne propose jamais une série déjà faite, ni un exercice terminé ;
+ *  · superset : on enchaîne avec l'exercice suivant du groupe qui a encore
+ *    des séries ; après le dernier, repos (le plus long du groupe) puis on
+ *    revient au premier exercice du groupe qui a encore des séries ;
+ *  · exercice seul : repos, puis sa série suivante ;
+ *  · exercice (ou superset) terminé : repos, puis le PREMIER exercice de la
+ *    séance, dans l'ordre actuel, qui a encore des séries à faire ;
+ *  · plus rien à faire : séance terminée.
+ */
+export function planAfterSet(
+  plan: readonly PlanItem[],
+  from: { itemId: string; setNumber: number },
+): PlanStep {
+  const pending = (item: PlanItem) =>
+    item.sets
+      .filter((set) => !set.done && !(item.id === from.itemId && set.setNumber === from.setNumber))
+      .sort((a, b) => a.setNumber - b.setNumber)[0];
+  const target = (item: PlanItem): NextSet | null => {
+    const set = pending(item);
+    return set ? { itemId: item.id, name: item.name, setNumber: set.setNumber } : null;
+  };
+
+  const index = plan.findIndex((item) => item.id === from.itemId);
+  const group = index < 0 ? [] : (supersetGroups(plan).find((g) => g.includes(index)) ?? [index]);
+  const members = group.map((member) => plan[member] as PlanItem);
+  const rank = group.indexOf(index);
+
+  // Superset : le suivant du groupe qui a encore des séries, sans repos.
+  if (members.length > 1) {
+    for (const member of members.slice(rank + 1)) {
+      const next = target(member);
+      if (next) return { kind: "chain", next };
+    }
+  }
+
+  const firstInGroup = members.map(target).find((next) => next !== null) ?? null;
+  const next = firstInGroup ?? plan.map(target).find((candidate) => candidate !== null) ?? null;
+  if (!next) return { kind: "finished" };
+
+  const sourceItems = members.length > 0 ? members : [];
+  const seconds = Math.max(0, ...sourceItems.map((item) => item.restSeconds ?? 0));
+  if (seconds === 0) return { kind: "go", next };
+  return { kind: "rest", seconds, sources: sourceItems.map((item) => item.id), next };
+}

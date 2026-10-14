@@ -98,6 +98,32 @@ appliquées : la RLS, les déclencheurs et les contraintes sont donc réels. La
 doublure n'est pas livrée avec le projet. La phase 2 a par ailleurs été
 validée sur un vrai projet Supabase (inscription, e-mail, profil, déconnexion).
 
+## Retours du 14 octobre au soir (8 parcours × 2, plus mesures)
+
+**Rapidité de « Changer »**, mesurée avec 90 ms de latence par requête (cas
+Vercel ↔ Supabase dans deux régions différentes) :
+
+| Étape                          | Avant           | Après          |
+| ------------------------------ | --------------- | -------------- |
+| Ouvrir « Changer »             | 1,05 s, 10 req. | 0,50 s, 5 req. |
+| « Choisir » → retour en séance | 2,8 s, 42 req.  | 0,7 s, 9 req.  |
+
+Causes corrigées : une dizaine de requêtes successives pour un changement
+(remplacées par une fonction SQL), toute l'application recalculée après
+chaque série ou changement (maintenant : la seule page de la séance), la
+session vérifiée auprès de Supabase Auth jusqu'à 4 fois par clic (maintenant
+mémorisée quelques secondes, par jeton exact).
+
+Parcours vérifiés (ordinateur et mobile) : charge « kg/bras » pour les
+haltères (saisie, séance terminée, historique) et pas pour les autres ;
+▲ ▼ immédiats, bornes, ordre conservé après rechargement, séries intactes ;
+prochain exercice jamais déjà terminé (exercice fait plus tôt sauté, série
+validée à la volée comptée) ; minuteur qui continue sur une autre page et
+sonne la fin ; « Séance terminée » quand tout est fait, puis minuteur retiré à
+la fin de la séance ; filtrer la bibliothèque (page « Changer ») sans revenir
+en haut, « Effacer les filtres » qui garde la bibliothèque ouverte. Les
+parcours précédents (salle, séances sur mesure, aliments, phase 6) repassent.
+
 ## Phase 6 : habitudes, rappels, notifications, données (8 parcours × 2)
 
 Vérifié sur ordinateur et sur mobile (390 px), application compilée en production :

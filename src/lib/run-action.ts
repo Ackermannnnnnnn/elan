@@ -2,6 +2,7 @@ import "server-only";
 import { unstable_rethrow } from "next/navigation";
 import type { z } from "zod";
 import { DataError } from "@/data/client";
+import { withRequestScope } from "@/lib/auth/session";
 import { fieldErrorsFromZod, type ActionResult } from "@/lib/action-result";
 
 /**
@@ -18,7 +19,7 @@ export async function runAction<TSchema extends z.ZodType>(
   if (!parsed.success) return { ok: false, fieldErrors: fieldErrorsFromZod(parsed.error) };
 
   try {
-    return (await handler(parsed.data)) ?? { ok: true };
+    return (await withRequestScope(() => handler(parsed.data))) ?? { ok: true };
   } catch (error) {
     unstable_rethrow(error);
     if (error instanceof DataError) return { ok: false, formError: error.key };

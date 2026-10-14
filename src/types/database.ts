@@ -210,6 +210,7 @@ export type Database = {
           created_at: string;
           updated_at: string;
           is_timed: boolean;
+          load_basis: "total" | "per_hand";
         };
         Insert: {
           id?: string;
@@ -228,6 +229,7 @@ export type Database = {
           created_at?: string;
           updated_at?: string;
           is_timed?: boolean;
+          load_basis?: "total" | "per_hand";
         };
         Update: {
           id?: string;
@@ -246,6 +248,7 @@ export type Database = {
           created_at?: string;
           updated_at?: string;
           is_timed?: boolean;
+          load_basis?: "total" | "per_hand";
         };
         Relationships: [];
       };
@@ -856,7 +859,7 @@ export type Database = {
         Row: {
           id: string;
           user_id: string;
-          kind: string;
+          kind: "rest" | "rest_test";
           fire_at: string;
           detail: string | null;
           url: string | null;
@@ -865,7 +868,7 @@ export type Database = {
         Insert: {
           id?: string;
           user_id?: string;
-          kind: string;
+          kind: "rest" | "rest_test";
           fire_at: string;
           detail?: string | null;
           url?: string | null;
@@ -874,7 +877,7 @@ export type Database = {
         Update: {
           id?: string;
           user_id?: string;
-          kind?: string;
+          kind?: "rest" | "rest_test";
           fire_at?: string;
           detail?: string | null;
           url?: string | null;
@@ -1711,12 +1714,20 @@ export type Database = {
         Args: Record<string, never>;
         Returns: undefined;
       };
+      move_session_exercise: {
+        Args: { p_item_id: string; p_direction: string };
+        Returns: string;
+      };
       search_foods: {
         Args: { search: string; max_results?: number };
         Returns: Database["public"]["Tables"]["foods"]["Row"][];
       };
       start_session: {
         Args: { p_workout_id: string; p_today: string; p_occurrence?: string; p_planned_id?: string };
+        Returns: string;
+      };
+      swap_session_exercise: {
+        Args: { p_item_id: string; p_exercise_id: string; p_in_program?: boolean; p_rep_min?: number; p_rep_max?: number; p_rest_seconds?: number };
         Returns: string;
       };
     };

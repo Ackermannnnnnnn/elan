@@ -1288,7 +1288,7 @@
       "addSet": "Ajouter une série",
       "removeSet": "Retirer une série",
       "previous": "La dernière fois : {sets}",
-      "setWeighted": "{weight} kg × {reps}",
+      "setWeighted": "{weight} {unit} × {reps}",
       "setBodyweight": "{reps} rép.",
       "setTimed": "{seconds} s",
       "suggestFirst": "Première fois : choisis une charge qui laisse 2 ou 3 répétitions en réserve.",
@@ -1310,8 +1310,8 @@
       "volume": "Volume",
       "effortShort": "Ressenti",
       "noSet": "Aucune série validée.",
-      "better": "Force estimée en hausse de {value} kg",
-      "worse": "Force estimée en baisse de {value} kg",
+      "better": "Force estimée en hausse de {value} {unit}",
+      "worse": "Force estimée en baisse de {value} {unit}",
       "same": "Force estimée identique",
       "freeName": "Séance libre",
       "restShort": "Repos",
@@ -1350,10 +1350,17 @@
       "addExercise": "Ajouter un exercice",
       "exerciseDone": "✓ {count, plural, one {# série faite} other {# séries faites}}",
       "progress": "{done}/{total} séries",
-      "goalWeighted": "Objectif : {weight} kg × {reps}",
+      "goalWeighted": "Objectif : {weight} {unit} × {reps}",
       "goalReps": "Objectif : {reps} répétitions",
       "goalSeconds": "Objectif : {reps} s",
-      "history": "Historique"
+      "history": "Historique",
+      "kgPerHand": "kg/bras",
+      "weightPerHand": "Charge / bras",
+      "weightLabelPerHand": "Charge par bras (un haltère) de la série {number}",
+      "allDone": "Séance terminée !",
+      "allDoneHint": "Toutes les séries prévues sont faites.",
+      "backToSession": "Revenir à la séance",
+      "goFinish": "Terminer la séance"
     },
     "history": {
       "title": "Historique",
@@ -1378,7 +1385,9 @@
       "table": "Voir le détail des séries",
       "date": "Séance",
       "sets": "Séries",
-      "oneRepMax": "Force estimée"
+      "oneRepMax": "Force estimée",
+      "kgPerHand": "kg/bras",
+      "perHandNote": "Charges notées par bras (poids d'un haltère)."
     },
     "manualProgram": "Mes séances",
     "libraryLink": "Bibliothèque",
@@ -1550,7 +1559,9 @@
       "delete": "Supprimer l'exercice",
       "deleteConfirm": "Confirmer la suppression",
       "deleting": "Suppression…",
-      "badge": "Exercice perso"
+      "badge": "Exercice perso",
+      "perHand": "Charge par bras (haltères)",
+      "perHandHint": "Un haltère dans chaque main, ou un bras à la fois : tu notes le poids d'UN haltère, affiché « kg/bras »."
     },
     "demo": {
       "show": "Voir le mouvement",
@@ -1706,7 +1717,9 @@
       "restHint": "Une notification sonne à la fin du repos, même téléphone verrouillé (quelques secondes de décalage possibles).",
       "test": "Envoyer un essai",
       "testSent": "Essai envoyé : la notification devrait arriver dans quelques secondes.",
-      "disable": "Désactiver sur ce téléphone"
+      "disable": "Désactiver sur ce téléphone",
+      "testRest": "Tester la fin de repos",
+      "testRestSent": "Alarme programmée dans 10 secondes : verrouille ton téléphone maintenant. Si rien n'arrive d'ici 20 secondes, la planification côté Supabase n'est pas en service (voir le guide docs/NOTIFICATIONS.md)."
     },
     "reminders": {
       "title": "Rappels",
@@ -1758,6 +1771,11 @@
       "button": "Installer Élan",
       "ios": "Sur iPhone : ouvre Élan dans Safari, touche le bouton Partager, puis « Sur l'écran d'accueil ».",
       "manual": "Dans le menu du navigateur (⋮), choisis « Installer l'application » ou « Ajouter à l'écran d'accueil »."
+    },
+    "hint": {
+      "text": "Pour être prévenu à la fin du repos même téléphone verrouillé, active les notifications sur ce téléphone.",
+      "link": "Activer",
+      "dismiss": "Masquer ce conseil"
     }
   },
   "Account": {
@@ -1809,6 +1827,11 @@
     "test": {
       "title": "Notifications activées",
       "body": "Tes rappels arriveront ici.",
+      "bodyWithDetail": "{detail}"
+    },
+    "rest_test": {
+      "title": "Fin de repos : ça marche !",
+      "body": "Pendant tes séances, la fin du repos arrivera comme ça, même téléphone verrouillé.",
       "bodyWithDetail": "{detail}"
     }
   }

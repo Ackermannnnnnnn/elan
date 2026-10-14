@@ -80,6 +80,9 @@ export async function ExerciseBrowser({
     { query: search.q, muscle: search.muscle, equipment: search.mine ? available : null },
   );
   const filtered = search.q !== "" || search.muscle !== null || search.mine;
+  // « Effacer les filtres » garde le contexte de la page (bibliothèque ouverte, portée…).
+  const keepQuery = new URLSearchParams(keep).toString();
+  const resetHref = keepQuery ? `${path}?${keepQuery}` : path;
 
   return (
     <div className="flex flex-col gap-4">
@@ -88,6 +91,9 @@ export async function ExerciseBrowser({
         <Form
           key={`${search.q}|${search.muscle ?? ""}|${search.mine}`}
           action={path}
+          // Filtrer ne ramène pas en haut de la page : on reste au même endroit
+          // (la bibliothèque est souvent sous d'autres contenus, page « Changer »).
+          scroll={false}
           className="flex flex-col gap-4"
           role="search"
         >
@@ -132,7 +138,9 @@ export async function ExerciseBrowser({
             <div className="flex flex-wrap gap-2">
               {filtered ? (
                 <Button asChild variant="ghost">
-                  <Link href={path}>{t("browser.reset")}</Link>
+                  <Link href={resetHref} scroll={false}>
+                    {t("browser.reset")}
+                  </Link>
                 </Button>
               ) : null}
               <Button type="submit" variant="secondary">

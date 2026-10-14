@@ -1,6 +1,6 @@
 "use client";
 
-import { BellOff, BellRing, Send } from "lucide-react";
+import { BellOff, BellRing, Send, Timer } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useState, useTransition } from "react";
 import { useFormMessages } from "@/components/forms/use-form-messages";
@@ -10,6 +10,7 @@ import {
   deletePushSubscriptionAction,
   savePushSubscriptionAction,
   testPushAction,
+  testRestAlarmAction,
 } from "./actions";
 import {
   currentSubscription,
@@ -102,6 +103,15 @@ export function PushDeviceCard() {
       else setError(result.formError ?? "generic");
     });
 
+  const testRest = () =>
+    startTransition(async () => {
+      setError(null);
+      setNotice(null);
+      const result = await testRestAlarmAction();
+      if (result.ok) setNotice(t("testRestSent"));
+      else setError(result.formError ?? "generic");
+    });
+
   if (state.kind === "loading") {
     return <p className="text-muted-foreground">{t("checking")}</p>;
   }
@@ -152,6 +162,10 @@ export function PushDeviceCard() {
             >
               <Send aria-hidden="true" />
               {t("test")}
+            </Button>
+            <Button type="button" variant="secondary" onClick={testRest} disabled={pending}>
+              <Timer aria-hidden="true" />
+              {t("testRest")}
             </Button>
             <Button type="button" variant="ghost" onClick={disable} disabled={pending}>
               <BellOff aria-hidden="true" />

@@ -24,13 +24,14 @@ type Row = {
   difficulty: string;
   is_compound: boolean;
   is_timed: boolean;
+  load_basis: string;
   caution_areas: string[];
 };
 
 describe("bibliothèque d'exercices", () => {
   it("correspond exactement au catalogue du code", async () => {
     const { rows } = await db.query<Row>(
-      "select slug, name, primary_muscle, movement_pattern, equipment, difficulty, is_compound, is_timed, caution_areas from exercise_library where owner_id is null order by slug",
+      "select slug, name, primary_muscle, movement_pattern, equipment, difficulty, is_compound, is_timed, load_basis, caution_areas from exercise_library where owner_id is null order by slug",
     );
     const expected = [...EXERCISE_CATALOG]
       .sort((a, b) => (a.slug < b.slug ? -1 : 1))
@@ -43,6 +44,7 @@ describe("bibliothèque d'exercices", () => {
         difficulty: exercise.difficulty,
         is_compound: exercise.compound,
         is_timed: exercise.timed ?? false,
+        load_basis: exercise.perHand ? "per_hand" : "total",
         caution_areas: exercise.caution,
       }));
     expect(rows).toEqual(expected);

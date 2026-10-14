@@ -51,12 +51,14 @@ export async function setRestAlarm(input: {
   seconds: number;
   detail: string | null;
   url: string;
+  /** Alarme d'essai (vérifier tout le circuit) : n'efface pas un vrai repos en cours. */
+  test?: boolean;
 }): Promise<void> {
   const { supabase, user } = await getDb();
   const { error } = await supabase.from("push_alarms").upsert(
     {
       user_id: user.id,
-      kind: "rest",
+      kind: input.test ? "rest_test" : "rest",
       fire_at: new Date(Date.now() + input.seconds * 1000).toISOString(),
       detail: input.detail,
       url: input.url,

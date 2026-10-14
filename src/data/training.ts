@@ -2,7 +2,7 @@ import "server-only";
 import { cache } from "react";
 import type { CautionArea, Equipment, Level, Muscle, Pattern } from "@/domain/exercise-catalog";
 import { type ReplacementFilters, findReplacements } from "@/domain/exercise-replacement";
-import { type LoggedSet, type Suggestion, suggestNext } from "@/domain/progression";
+import { liftedLoad, type LoggedSet, type Suggestion, suggestNext } from "@/domain/progression";
 import {
   availableEquipment,
   estimateWorkoutMinutes,
@@ -29,7 +29,7 @@ import { getOwnProfile } from "./profile";
 // --- Bibliothèque ------------------------------------------------------------------
 
 const EXERCISE_COLUMNS =
-  "id, owner_id, slug, name, primary_muscle, secondary_muscles, movement_pattern, equipment, difficulty, is_compound, is_timed, caution_areas, instructions, media_url" as const;
+  "id, owner_id, slug, name, primary_muscle, secondary_muscles, movement_pattern, equipment, difficulty, is_compound, is_timed, load_basis, caution_areas, instructions, media_url" as const;
 
 export type Exercise = Pick<
   Row<"exercise_library">,
@@ -44,6 +44,7 @@ export type Exercise = Pick<
   | "difficulty"
   | "is_compound"
   | "is_timed"
+  | "load_basis"
   | "caution_areas"
   | "instructions"
   | "media_url"
@@ -112,6 +113,8 @@ export type OwnExerciseInput = {
   primary: Muscle;
   equipment: Equipment[];
   timed: boolean;
+  /** Charge saisie par haltère (« kg / bras ») plutôt que totale. */
+  perHand: boolean;
   instructions: string | null;
 };
 
@@ -137,6 +140,7 @@ export async function createOwnExercise(input: OwnExerciseInput): Promise<string
       difficulty: "beginner",
       is_compound: false,
       is_timed: input.timed,
+      load_basis: input.perHand ? "per_hand" : "total",
       instructions: input.instructions,
     })
     .select("id")
@@ -155,6 +159,7 @@ export async function updateOwnExercise(id: string, input: OwnExerciseInput): Pr
       movement_pattern: PATTERN_BY_MUSCLE[input.primary],
       equipment: input.equipment,
       is_timed: input.timed,
+      load_basis: input.perHand ? "per_hand" : "total",
       instructions: input.instructions,
     })
     .eq("id", id)
@@ -1187,16 +1192,17 @@ export type SessionView = {
 
 export async function getSession(id: string): Promise<SessionView | null> {
   const { supabase, user } = await getDb();
-  const { data: session, error } = await supabase
-    .from("workout_sessions")
-    .select(SESSION_COLUMNS)
-    .eq("id", id)
-    .eq("user_id", user.id)
-    .maybeSingle();
-  if (error) fail("getSession", error);
-  if (!session) return null;
-
-  const [setsResult, itemsResult] = await Promise.all([
+  // La bibliothèque ne dépend de rien : lue dès maintenant, en parallèle.
+  const libraryPromise = listExercises();
+  libraryPromise.catch(() => {}); // évite un rejet non suivi si la séance est introuvable
+  // Séance, séries et plan en parallèle : un seul aller-retour vers la base.
+  const [sessionResult, setsResult, itemsResult] = await Promise.all([
+    supabase
+      .from("workout_sessions")
+      .select(SESSION_COLUMNS)
+      .eq("id", id)
+      .eq("user_id", user.id)
+      .maybeSingle(),
     supabase
       .from("workout_sets")
       .select(SET_COLUMNS)
@@ -1211,6 +1217,9 @@ export async function getSession(id: string): Promise<SessionView | null> {
       .order("position", { ascending: true })
       .order("created_at", { ascending: true }),
   ]);
+  if (sessionResult.error) fail("getSession", sessionResult.error);
+  const session = sessionResult.data;
+  if (!session) return null;
   if (setsResult.error) fail("getSession.sets", setsResult.error);
   if (itemsResult.error) fail("getSession.items", itemsResult.error);
   const sets = setsResult.data;
@@ -1222,7 +1231,7 @@ export async function getSession(id: string): Promise<SessionView | null> {
   const exerciseIds = items.map((item) => item.exercise_id);
 
   const [library, history, notes] = await Promise.all([
-    listExercises().then((all) => new Map(all.map((exercise) => [exercise.id, exercise]))),
+    libraryPromise.then((all) => new Map(all.map((exercise) => [exercise.id, exercise]))),
     // Dernière performance AVANT cette séance (on exclut la séance elle-même).
     lastPerformance(exerciseIds, id),
     lastNotes(exerciseIds, id),
@@ -1306,19 +1315,28 @@ async function listSessionItems(sessionId: string) {
   return data;
 }
 
-/** Exercice de la séance + la séance (ouverte). */
+/**
+ * Exercice de la séance + la séance (ouverte), en une seule requête (la
+ * séance est jointe par sa clé étrangère).
+ */
 async function getSessionItem(itemId: string) {
   const { supabase, user } = await getDb();
   const { data, error } = await supabase
     .from("session_exercises")
-    .select(`${SESSION_ITEM_COLUMNS}, session_id`)
+    .select(
+      `${SESSION_ITEM_COLUMNS}, session_id, session:workout_sessions!inner(${SESSION_COLUMNS})`,
+    )
     .eq("id", itemId)
     .eq("user_id", user.id)
-    .maybeSingle();
+    .maybeSingle()
+    .overrideTypes<SessionItem & { session_id: string; session: Session }, { merge: false }>();
   if (error) fail("getSessionItem", error);
   if (!data) throw new DataError("itemNotFound");
-  const session = await getOpenSession(data.session_id);
-  return { item: data, session };
+  const { session, ...item } = data;
+  if (session.status !== "in_progress" && session.status !== "paused") {
+    throw new DataError("sessionNotOpen");
+  }
+  return { item, session };
 }
 
 /** Réécrit les positions 0, 1, 2… dans l'ordre donné. */
@@ -1399,127 +1417,52 @@ export async function swapSessionExercise(input: {
   exerciseId: string;
   inProgram: boolean;
 }): Promise<string> {
-  const { supabase, user } = await getDb();
-  const { item, session } = await getSessionItem(input.itemId);
-  if (item.exercise_id === input.exerciseId) return session.id;
-  const items = await listSessionItems(session.id);
-  if (items.some((other) => other.exercise_id === input.exerciseId)) {
+  const { supabase } = await getDb();
+  // Tout se fait en base, en une transaction (migration « session_speed »).
+  const call = (prescription?: { repMin: number; repMax: number; restSeconds: number | null }) =>
+    supabase.rpc("swap_session_exercise", {
+      p_item_id: input.itemId,
+      p_exercise_id: input.exerciseId,
+      p_in_program: input.inProgram,
+      ...(prescription
+        ? {
+            p_rep_min: prescription.repMin,
+            p_rep_max: prescription.repMax,
+            ...(prescription.restSeconds === null
+              ? {}
+              : { p_rest_seconds: prescription.restSeconds }),
+          }
+        : {}),
+    });
+  let { data, error } = await call();
+  // Passage répétitions ↔ secondes (rare) : il faut l'objectif propre au nouvel exercice.
+  if (error?.code === "P0001" && error.message === "needsPrescription") {
+    const [replacement, settings] = await Promise.all([
+      getExercise(input.exerciseId),
+      getTrainingSettings(),
+    ]);
+    if (!replacement) throw new DataError("itemNotFound");
+    const prescription = prescriptionFor(
+      { compound: replacement.is_compound, timed: replacement.is_timed },
+      settings.goal,
+      settings.level,
+    );
+    ({ data, error } = await call(prescription));
+  }
+  if (error) sessionEditError("swapSessionExercise", error);
+  return data as string;
+}
+
+/** Traduit les erreurs des fonctions SQL de la séance en cours. */
+function sessionEditError(context: string, error: { code?: string; message?: string }): never {
+  if (error.code === "P0002") throw new DataError("itemNotFound");
+  if (error.code === "P0001" && error.message === "sessionNotOpen") {
+    throw new DataError("sessionNotOpen");
+  }
+  if (error.code === "P0001" && error.message === "exerciseAlreadyInSession") {
     throw new DataError("exerciseAlreadyInSession");
   }
-  const [current, replacement, settings] = await Promise.all([
-    getExercise(item.exercise_id),
-    getExercise(input.exerciseId),
-    getTrainingSettings(),
-  ]);
-  if (!current || !replacement) throw new DataError("itemNotFound");
-
-  const { data: sets, error: setsError } = await supabase
-    .from("workout_sets")
-    .select("id, completed_at")
-    .eq("user_id", user.id)
-    .eq("session_id", session.id)
-    .eq("exercise_id", item.exercise_id);
-  if (setsError) fail("swapSessionExercise.sets", setsError);
-  const done = sets.filter((set) => set.completed_at).length;
-  const remaining = Math.max(1, sets.length - done);
-
-  // Objectif : celui prévu, sauf si l'on passe de répétitions à secondes (ou l'inverse).
-  const prescription =
-    replacement.is_timed !== current.is_timed
-      ? prescriptionFor(
-          { compound: replacement.is_compound, timed: replacement.is_timed },
-          settings.goal,
-          settings.level,
-        )
-      : { repMin: item.rep_min, repMax: item.rep_max, restSeconds: item.rest_seconds };
-
-  const { error: deleteError } = await supabase
-    .from("workout_sets")
-    .delete()
-    .eq("user_id", user.id)
-    .eq("session_id", session.id)
-    .eq("exercise_id", item.exercise_id)
-    .is("completed_at", null);
-  if (deleteError) fail("swapSessionExercise.clear", deleteError, "saveFailed");
-
-  if (done === 0) {
-    // Rien de fait : l'exercice est remplacé sur place.
-    const { error } = await supabase
-      .from("session_exercises")
-      .update({
-        exercise_id: replacement.id,
-        replaced_exercise_id: item.replaced_exercise_id ?? item.exercise_id,
-        rep_min: prescription.repMin,
-        rep_max: prescription.repMax,
-        rest_seconds: prescription.restSeconds,
-      })
-      .eq("id", item.id)
-      .eq("user_id", user.id);
-    if (error) fail("swapSessionExercise", error, "saveFailed");
-    const { error: insertError } = await supabase.from("workout_sets").insert(
-      Array.from({ length: remaining }, (_, index) => ({
-        user_id: user.id,
-        session_id: session.id,
-        exercise_id: replacement.id,
-        set_number: index + 1,
-      })),
-    );
-    if (insertError) fail("swapSessionExercise.sets", insertError, "saveFailed");
-  } else {
-    // Des séries sont faites : elles restent, le nouvel exercice suit juste après.
-    await createSessionPlan(
-      session.id,
-      [
-        {
-          exerciseId: replacement.id,
-          sets: remaining,
-          repMin: prescription.repMin,
-          repMax: prescription.repMax,
-          restSeconds: prescription.restSeconds,
-          supersetWithNext: item.superset_with_next,
-        },
-      ],
-      items.length,
-    );
-    const fresh = await listSessionItems(session.id);
-    const added = fresh.find((other) => other.exercise_id === replacement.id);
-    if (added) {
-      const { error } = await supabase
-        .from("session_exercises")
-        .update({ replaced_exercise_id: item.exercise_id })
-        .eq("id", added.id)
-        .eq("user_id", user.id);
-      if (error) fail("swapSessionExercise.trace", error, "saveFailed");
-      const order = fresh.filter((other) => other.id !== added.id);
-      order.splice(order.findIndex((other) => other.id === item.id) + 1, 0, added);
-      await writeOrder(order, new Map([[item.id, false]]));
-    }
-  }
-
-  if (input.inProgram && session.workout_id) {
-    const { data: template, error } = await supabase
-      .from("workout_exercises")
-      .select("id, exercise_id, replaced_exercise_id")
-      .eq("user_id", user.id)
-      .eq("workout_id", session.workout_id);
-    if (error) fail("swapSessionExercise.template", error);
-    const target = template.find((row) => row.exercise_id === item.exercise_id);
-    const clash = template.some((row) => row.exercise_id === replacement.id);
-    if (target && !clash) {
-      const { error: updateError } = await supabase
-        .from("workout_exercises")
-        .update({
-          exercise_id: replacement.id,
-          replaced_exercise_id: target.replaced_exercise_id ?? target.exercise_id,
-          rep_min: prescription.repMin,
-          rep_max: prescription.repMax,
-        })
-        .eq("id", target.id)
-        .eq("user_id", user.id);
-      if (updateError) fail("swapSessionExercise.program", updateError, "saveFailed");
-    }
-  }
-  return session.id;
+  fail(context, error, "saveFailed");
 }
 
 /**
@@ -1576,24 +1519,14 @@ export async function moveSessionExercise(
   itemId: string,
   direction: -1 | 1 | "last",
 ): Promise<string> {
-  const { item, session } = await getSessionItem(itemId);
-  const items = await listSessionItems(session.id);
-  const from = items.findIndex((other) => other.id === item.id);
-  if (from < 0) return session.id;
-  const order = [...items];
-  const [moved] = order.splice(from, 1);
-  if (!moved) return session.id;
-  const to =
-    direction === "last" ? order.length : Math.max(0, Math.min(order.length, from + direction));
-  if (to === from) return session.id;
-  order.splice(to, 0, moved);
-  const flags = new Map<string, boolean>([[moved.id, false]]);
-  const before = items[from - 1];
-  if (before) flags.set(before.id, false);
-  const newBefore = order[to - 1];
-  if (newBefore) flags.set(newBefore.id, false);
-  await writeOrder(order, flags);
-  return session.id;
+  const { supabase } = await getDb();
+  // Une seule requête : bornes, supersets et positions sont gérés en base.
+  const { data, error } = await supabase.rpc("move_session_exercise", {
+    p_item_id: itemId,
+    p_direction: direction === "last" ? "last" : direction === -1 ? "up" : "down",
+  });
+  if (error) sessionEditError("moveSessionExercise", error);
+  return data;
 }
 
 /** Enchaîne (ou sépare) un exercice avec le suivant, pendant la séance. */
@@ -1662,12 +1595,11 @@ export async function listSessionAlternatives(
   workoutId: string | null;
   options: Exercise[];
 }> {
+  // Bibliothèque et réglages ne dépendent pas de la séance : lus en même temps.
+  const library = Promise.all([listExercises(), getTrainingSettings()]);
+  library.catch(() => {}); // évite un rejet non suivi si la séance est introuvable
   const { item, session } = await getSessionItem(itemId);
-  const [all, settings, items] = await Promise.all([
-    listExercises(),
-    getTrainingSettings(),
-    listSessionItems(session.id),
-  ]);
+  const [[all, settings], items] = await Promise.all([library, listSessionItems(session.id)]);
   const current = all.find((exercise) => exercise.id === item.exercise_id);
   if (!current) throw new DataError("itemNotFound");
   const byId = new Map(all.map((exercise) => [exercise.id, exercise]));
@@ -1896,14 +1828,18 @@ export type SessionSummary = Session & { sets: number; volumeKg: number; exercis
 
 export async function listCompletedSessions(limit = 30): Promise<SessionSummary[]> {
   const { supabase, user } = await getDb();
-  const { data: sessions, error } = await supabase
-    .from("workout_sessions")
-    .select(SESSION_COLUMNS)
-    .eq("user_id", user.id)
-    .eq("status", "completed")
-    .order("ended_at", { ascending: false })
-    .limit(limit);
+  const [{ data: sessions, error }, library] = await Promise.all([
+    supabase
+      .from("workout_sessions")
+      .select(SESSION_COLUMNS)
+      .eq("user_id", user.id)
+      .eq("status", "completed")
+      .order("ended_at", { ascending: false })
+      .limit(limit),
+    listExercises(),
+  ]);
   if (error) fail("listCompletedSessions", error);
+  const basis = new Map(library.map((exercise) => [exercise.id, exercise.load_basis]));
   const ids = sessions.map((session) => session.id);
   const { data: sets, error: setsError } = ids.length
     ? await supabase
@@ -1920,8 +1856,15 @@ export async function listCompletedSessions(limit = 30): Promise<SessionSummary[
       ...session,
       sets: own.length,
       exercises: new Set(own.map((set) => set.exercise_id)).size,
+      // Charge réellement soulevée : deux haltères = deux fois la charge saisie.
       volumeKg: Math.round(
-        own.reduce((sum, set) => sum + (set.weight_kg ?? 0) * (set.reps ?? 0), 0),
+        own.reduce(
+          (sum, set) =>
+            sum +
+            (liftedLoad(set.weight_kg, basis.get(set.exercise_id) ?? "total") ?? 0) *
+              (set.reps ?? 0),
+          0,
+        ),
       ),
     };
   });

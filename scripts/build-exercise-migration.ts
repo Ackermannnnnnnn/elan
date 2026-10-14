@@ -27,6 +27,7 @@ const rows = EXERCISE_CATALOG.map((exercise) =>
     text(exercise.difficulty),
     String(exercise.compound),
     String(exercise.timed ?? false),
+    text(exercise.perHand ? "per_hand" : "total"),
     array(exercise.caution),
     text(exercise.instructions),
   ].join(", "),
@@ -42,7 +43,7 @@ writeFileSync(
 
 insert into public.exercise_library (
   slug, name, primary_muscle, secondary_muscles, movement_pattern, equipment, difficulty,
-  is_compound, is_timed, caution_areas, instructions
+  is_compound, is_timed, load_basis, caution_areas, instructions
 )
 values
 ${rows.map((row) => `  (${row})`).join(",\n")}
@@ -55,6 +56,7 @@ on conflict (slug) where owner_id is null do update set
   difficulty = excluded.difficulty,
   is_compound = excluded.is_compound,
   is_timed = excluded.is_timed,
+  load_basis = excluded.load_basis,
   caution_areas = excluded.caution_areas,
   instructions = excluded.instructions;
 `,

@@ -42,6 +42,7 @@ export default async function EditExercisePage({
             primary: exercise.primary_muscle as Muscle,
             equipment: exercise.equipment as Equipment[],
             kind: exercise.is_timed ? "timed" : "reps",
+            perHand: exercise.load_basis === "per_hand",
             instructions: exercise.instructions ?? "",
           }}
           submitLabel={t("ownExercise.save")}

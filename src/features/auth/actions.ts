@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { ROUTES, safeRedirectPath } from "@/config/routes";
 import { fieldErrorsFromZod, type ActionResult } from "@/lib/action-result";
 import { ONBOARDED_COOKIE } from "@/lib/onboarding-cookie";
+import { forgetVerifiedSession } from "@/lib/auth/session";
 import { getSiteUrl } from "@/lib/site-url";
 import { createClient } from "@/lib/supabase/server";
 import { authErrorKey, logAuthError } from "./errors";
@@ -130,6 +131,7 @@ export async function updatePassword(
 
 export async function signOut(): Promise<void> {
   const supabase = await createClient();
+  await forgetVerifiedSession();
   const { error } = await supabase.auth.signOut();
   if (error) logAuthError("signOut", error);
   // Le prochain compte utilisé sur ce navigateur sera vérifié à nouveau.

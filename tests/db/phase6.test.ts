@@ -95,6 +95,27 @@ describe("abonnements et alarmes", () => {
   });
 });
 
+describe("alarme d'essai de fin de repos", () => {
+  it("passe par le même circuit que la vraie, sans la remplacer", async () => {
+    await asUser(
+      db,
+      alice,
+      (tx) =>
+        tx.query(
+          "insert into push_alarms (kind, fire_at) values ('rest', '2026-10-14 11:00:00+00'), ('rest_test', '2026-10-14 11:00:00+00')",
+        ),
+      { commit: true },
+    );
+    const due = await db.query<{ m: Message[] }>(
+      "select private.due_rest_alarms('2026-10-14 11:00:02+00') as m",
+    );
+    expect((due.rows[0]?.m ?? []).map((message) => message.kind).sort()).toEqual([
+      "rest",
+      "rest_test",
+    ]);
+  });
+});
+
 describe("rappels", () => {
   beforeAll(async () => {
     // Bruxelles en octobre = UTC+2 : 08:00 locales = 06:00 UTC. Le 14/10/2026 est un mercredi.
