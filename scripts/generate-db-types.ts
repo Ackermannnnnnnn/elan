@@ -27,6 +27,7 @@ const SCALAR_TYPES: Record<string, string> = {
   text: "string",
   varchar: "string",
   date: "string",
+  void: "undefined",
   time: "string",
   timestamptz: "string",
   timestamp: "string",
@@ -136,6 +137,7 @@ const SQL_TO_TS: Record<string, string> = {
   boolean: "boolean",
   uuid: "string",
   date: "string",
+  void: "undefined",
 };
 
 function functionLines(info: FunctionInfo): string[] {
@@ -152,7 +154,9 @@ function functionLines(info: FunctionInfo): string[] {
   if (!row) throw new Error(`Type de retour non géré : ${info.return_type} (${info.name})`);
   return [
     `      ${info.name}: {`,
-    `        Args: { ${args.join("; ")} };`,
+    args.length > 0
+      ? `        Args: { ${args.join("; ")} };`
+      : "        Args: Record<string, never>;",
     `        Returns: ${info.returns_set ? `${row}[]` : row};`,
     "      };",
   ];

@@ -65,7 +65,8 @@
       "submitting": "Connexion…",
       "forgot": "Mot de passe oublié ?",
       "noAccount": "Pas encore de compte ?",
-      "signupLink": "Créer un compte"
+      "signupLink": "Créer un compte",
+      "accountDeleted": "Ton compte et toutes tes données ont été supprimés."
     },
     "signup": {
       "title": "Créer un compte",
@@ -123,7 +124,11 @@
     "ingredientsRequired": "Ajoute au moins un ingrédient.",
     "ingredientFood": "Choisis l'aliment dans la liste.",
     "barcodeInvalid": "Un code-barres compte 8 à 14 chiffres.",
-    "repRangeInvalid": "Le maximum doit être supérieur ou égal au minimum."
+    "repRangeInvalid": "Le maximum doit être supérieur ou égal au minimum.",
+    "wrongPassword": "Mot de passe incorrect.",
+    "confirmationMismatch": "Recopie exactement le mot demandé.",
+    "timeInvalid": "Indique une heure valide.",
+    "pickAtLeastOneDay": "Choisis au moins un jour."
   },
   "Errors": {
     "generic": "Une erreur est survenue. Réessaie dans un instant.",
@@ -177,7 +182,12 @@
     "exerciseInUse": "Cet exercice figure dans une séance ou dans ton historique : il ne peut pas être supprimé.",
     "exerciseAlreadyInSession": "Cet exercice est déjà dans la séance.",
     "sessionNotOpen": "Cette séance est terminée : elle ne peut plus être modifiée.",
-    "nothingToLink": "Il n'y a pas d'exercice après celui-ci pour faire un superset."
+    "nothingToLink": "Il n'y a pas d'exercice après celui-ci pour faire un superset.",
+    "pushNotConfigured": "Les notifications ne sont pas encore activées sur le serveur.",
+    "pushNotSubscribed": "Ce téléphone n'est plus abonné. Réactive les notifications.",
+    "pushFailed": "La notification n'a pas pu être envoyée. Réessaie dans un instant.",
+    "exportFailed": "L'export a échoué. Réessaie dans un instant.",
+    "accountDeleteFailed": "La suppression du compte a échoué. Rien n'a été effacé ; réessaie dans un instant."
   },
   "Home": {
     "greeting": "Bonjour {name}",
@@ -286,6 +296,17 @@
     "session": {
       "title": "Session",
       "description": "Tu resteras connecté sur cet appareil tant que tu ne te déconnectes pas."
+    },
+    "notifications": {
+      "title": "Rappels et application",
+      "description": "Rappels (pesée, repas, séance), notifications de fin de repos et installation sur le téléphone.",
+      "open": "Régler les rappels"
+    },
+    "data": {
+      "title": "Mes données",
+      "description": "Récupère tout ce que tu as enregistré dans un fichier, ou supprime ton compte.",
+      "export": "Télécharger mes données",
+      "delete": "Supprimer mon compte"
     }
   },
   "Setup": {
@@ -687,7 +708,8 @@
       "abandoned": "Abandonné",
       "since": "depuis le {date}",
       "target": "vers {weight} kg"
-    }
+    },
+    "habitsLink": "Habitudes"
   },
   "Nutrition": {
     "title": "Nutrition",
@@ -1592,5 +1614,202 @@
     "range": "Pour ta taille, un IMC de 18,5 à 24,9 correspond à {min} – {max} kg.",
     "limits": "L'IMC (poids ÷ taille²) ne distingue pas le muscle de la graisse : chez une personne musclée, il surestime la corpulence. Ton tour de taille et l'évolution de tes mensurations complètent ce repère.",
     "short": "IMC {value} · {category}"
+  },
+  "Habits": {
+    "title": "Habitudes",
+    "lead": "Ce que tu fais déjà, compté tout seul à partir de ce que tu enregistres. Une journée manquée n'efface rien.",
+    "seeAll": "Détails",
+    "choose": "Choisir",
+    "none": "Aucune habitude suivie pour l'instant.",
+    "name": {
+      "meals_logged": "Repas notés",
+      "hydration": "Hydratation",
+      "walking": "Marche",
+      "sleep": "Sommeil",
+      "workouts": "Séances"
+    },
+    "describe": {
+      "meals_logged": "Le nombre de repas notés dans ton journal chaque jour.",
+      "hydration": "L'eau ajoutée depuis l'accueil.",
+      "walking": "Les pas que tu notes chaque jour.",
+      "sleep": "Tes heures de sommeil, à noter le matin.",
+      "workouts": "Les séances terminées, par semaine (du lundi au dimanche)."
+    },
+    "unit": {
+      "meals_logged": "repas / jour",
+      "hydration": "ml / jour",
+      "walking": "pas / jour",
+      "sleep": "h / nuit",
+      "workouts": "séances / semaine"
+    },
+    "progress": {
+      "meals_logged": "{value} / {target} repas aujourd'hui",
+      "hydration": "{value} / {target} L aujourd'hui",
+      "walking": "{value} / {target} pas aujourd'hui",
+      "sleep": "{value} h cette nuit (objectif {target} h)",
+      "sleepNone": "Nuit pas encore notée",
+      "workouts": "{value} / {target} cette semaine"
+    },
+    "mood": {
+      "streak": "{days} jours d'affilée",
+      "regular": "{days, plural, one {# jour sur les 7 derniers} other {# jours sur les 7 derniers}}",
+      "restart": "On reprend quand tu veux",
+      "weekStreak": "{weeks, plural, one {Objectif tenu la semaine passée} other {# semaines d'affilée}}",
+      "weekStarted": "La semaine est lancée",
+      "weekRestart": "Une séance, même courte, compte"
+    },
+    "dot": {
+      "done": "{date} : objectif atteint",
+      "notDone": "{date} : pas atteint"
+    },
+    "detail": {
+      "currentStreak": "Série en cours",
+      "bestStreak": "Meilleure série",
+      "daysReached": "Sur 28 jours",
+      "weeksReached": "Sur 8 semaines",
+      "days": "{count, plural, one {# jour} other {# jours}}",
+      "weeks": "{count, plural, one {# semaine} other {# semaines}}",
+      "outOf": "{value} / {total}",
+      "grid": "28 derniers jours"
+    },
+    "sleep": {
+      "title": "Ta nuit",
+      "description": "Une estimation suffit. Laisse vide pour effacer.",
+      "hours": "Heures de sommeil",
+      "date": "Nuit terminée le",
+      "hint": "Exemple : 7,5 pour 7 h 30.",
+      "save": "Enregistrer"
+    },
+    "settings": {
+      "title": "Habitudes suivies",
+      "description": "Choisis ce que tu veux suivre et ton objectif. Les objectifs proposés viennent de ton profil.",
+      "target": "Objectif",
+      "waterOff": "Le suivi de l'eau est désactivé dans ton profil."
+    }
+  },
+  "Notifications": {
+    "title": "Rappels et notifications",
+    "lead": "Des rappels discrets, que tu choisis. Rien n'est envoyé sans ton accord.",
+    "device": {
+      "title": "Sur ce téléphone",
+      "description": "Les notifications arrivent même écran verrouillé. À activer sur chaque appareil.",
+      "checking": "Vérification…",
+      "notConfigured": "Les notifications ne sont pas encore activées sur le serveur de l'application (réglage unique, voir docs/NOTIFICATIONS.md).",
+      "unsupported": "Ce navigateur ne gère pas les notifications. Sur Android, utilise Chrome ; sur ordinateur, Chrome, Edge ou Firefox.",
+      "iosInstall": "Sur iPhone, les notifications ne marchent que dans l'application installée : touche le bouton Partager, puis « Sur l'écran d'accueil », et ouvre Élan depuis son icône.",
+      "denied": "Les notifications sont bloquées pour Élan. Autorise-les dans les réglages du navigateur (ou du téléphone), puis recharge la page.",
+      "offText": "Les notifications sont désactivées sur ce téléphone.",
+      "enable": "Activer les notifications",
+      "enabling": "Activation…",
+      "onText": "Notifications activées sur ce téléphone.",
+      "rest": "Fin du repos pendant la séance",
+      "restHint": "Une notification sonne à la fin du repos, même téléphone verrouillé (quelques secondes de décalage possibles).",
+      "test": "Envoyer un essai",
+      "testSent": "Essai envoyé : la notification devrait arriver dans quelques secondes.",
+      "disable": "Désactiver sur ce téléphone"
+    },
+    "reminders": {
+      "title": "Rappels",
+      "description": "Envoyés aux téléphones où les notifications sont activées. Un rappel devenu inutile n'est pas envoyé.",
+      "time": "Heure",
+      "days": "Jours",
+      "weigh_in": {
+        "name": "Pesée",
+        "description": "Le matin, avant le petit-déjeuner. Pas de rappel si tu t'es déjà pesé."
+      },
+      "meal_log": {
+        "name": "Journal des repas",
+        "description": "Pas de rappel si tes repas du jour sont déjà notés."
+      },
+      "workout": {
+        "name": "Entraînement",
+        "description": "Pas de rappel si ta séance du jour est faite ou commencée."
+      },
+      "meal_prep": {
+        "name": "Préparation des repas",
+        "description": "Pour cuisiner à l'avance pour la semaine."
+      }
+    },
+    "weekday": {
+      "short": {
+        "1": "L",
+        "2": "M",
+        "3": "M",
+        "4": "J",
+        "5": "V",
+        "6": "S",
+        "7": "D"
+      },
+      "long": {
+        "1": "Lundi",
+        "2": "Mardi",
+        "3": "Mercredi",
+        "4": "Jeudi",
+        "5": "Vendredi",
+        "6": "Samedi",
+        "7": "Dimanche"
+      }
+    },
+    "install": {
+      "title": "Installer l'application",
+      "description": "Élan sur ton écran d'accueil, en plein écran, comme une vraie application. Gratuit, sans passer par un store.",
+      "checking": "Vérification…",
+      "installed": "Élan est installée sur cet appareil.",
+      "button": "Installer Élan",
+      "ios": "Sur iPhone : ouvre Élan dans Safari, touche le bouton Partager, puis « Sur l'écran d'accueil ».",
+      "manual": "Dans le menu du navigateur (⋮), choisis « Installer l'application » ou « Ajouter à l'écran d'accueil »."
+    }
+  },
+  "Account": {
+    "export": {
+      "button": "Télécharger mes données"
+    },
+    "delete": {
+      "title": "Supprimer mon compte",
+      "lead": "Suppression définitive, sans retour possible.",
+      "whatTitle": "Ce qui sera supprimé",
+      "what1": "Ton compte et ton profil (objectifs, préférences, allergies).",
+      "what2": "Tout ton suivi : repas, recettes, poids, mensurations, séances, habitudes.",
+      "what3": "Tes rappels et les notifications sur tous tes appareils.",
+      "exportFirst": "Tu veux garder une copie ? Télécharge d'abord tes données.",
+      "confirmTitle": "Confirmer",
+      "confirmDescription": "Pour éviter toute erreur, saisis ton mot de passe et recopie le mot demandé.",
+      "password": "Mot de passe",
+      "confirmation": "Recopie « {word} »",
+      "submit": "Supprimer définitivement",
+      "deleting": "Suppression…"
+    }
+  },
+  "Push": {
+    "rest": {
+      "title": "Repos terminé",
+      "body": "C'est reparti pour la série suivante.",
+      "bodyWithDetail": "À toi : {detail}"
+    },
+    "weigh_in": {
+      "title": "Pesée",
+      "body": "Un passage sur la balance ? Dix secondes suffisent.",
+      "bodyWithDetail": "{detail}"
+    },
+    "meal_log": {
+      "title": "Journal des repas",
+      "body": "Pense à noter tes repas du jour, même approximativement.",
+      "bodyWithDetail": "{detail}"
+    },
+    "workout": {
+      "title": "Séance du jour",
+      "body": "Ta séance t'attend. Même courte, elle compte.",
+      "bodyWithDetail": "{detail}"
+    },
+    "meal_prep": {
+      "title": "Préparation des repas",
+      "body": "C'est le moment de préparer tes repas à l'avance.",
+      "bodyWithDetail": "{detail}"
+    },
+    "test": {
+      "title": "Notifications activées",
+      "body": "Tes rappels arriveront ici.",
+      "bodyWithDetail": "{detail}"
+    }
   }
 }

@@ -14,7 +14,7 @@ Application web (mobile d'abord) : Next.js, TypeScript, Tailwind CSS, Supabase.
 | 3     | Onboarding, calculateur calorique, dashboard, poids, journal alimentaire                         | Terminée |
 | 4     | Base d'aliments (CIQUAL, Open Food Facts), recettes, plan de la semaine, courses — sans IA       | Terminée |
 | 5     | Programmes, séances, remplacement d'exercices, progression, séances sur mesure — sans IA         | Terminée |
-| 6     | Habitudes, rappels, export et suppression des données, déploiement                               | À faire  |
+| 6     | Habitudes, rappels et notifications, application installable, export et suppression des données  | Terminée |
 
 Ce qui fonctionne aujourd'hui :
 
@@ -73,6 +73,18 @@ Ce qui fonctionne aujourd'hui :
   ou aussi dans le programme, faire un exercice plus tard, réordonner, ajouter
   ou passer un exercice, supersets (dans la séance type ou en direct), notes
   rappelées la fois suivante, chrono pour les exercices tenus, séance libre.
+
+- **Habitudes** : repas notés, hydratation, marche, sommeil, séances par
+  semaine — calculées depuis ce qui est déjà enregistré (seul le sommeil se
+  note à part) ; séries et régularité sur 7 et 28 jours, sans culpabilisation.
+- **Rappels et notifications** : pesée, journal des repas, entraînement,
+  préparation des repas (heure et jours au choix) et **fin de repos même écran
+  verrouillé**. Gratuit ; mise en service unique décrite dans
+  [`docs/NOTIFICATIONS.md`](docs/NOTIFICATIONS.md).
+- **Application installable** sur l'écran d'accueil (Android, iPhone, ordinateur),
+  page « hors connexion ».
+- **Mes données** : export complet en un fichier (JSON) et suppression
+  définitive du compte, protégée par le mot de passe.
 
 **Pas d'IA, pas de frais.** La photo de repas et les coachs IA demandent un
 service payant : ils ne sont pas activés et l'application l'indique clairement.
@@ -236,3 +248,5 @@ Un test vérifie que la base et le catalogue concordent.
 3. Ajouter `https://<domaine>/auth/confirm` aux Redirect URLs de Supabase.
 
 Utiliser un projet Supabase distinct pour la production et pour le développement.
+
+Notifications (facultatif, gratuit) : voir [`docs/NOTIFICATIONS.md`](docs/NOTIFICATIONS.md).

@@ -25,6 +25,7 @@ export function LoginForm() {
   // Erreur transmise par une redirection (ex. lien de confirmation expiré) :
   // lue dans l'adresse, masquée dès le premier envoi du formulaire.
   const linkError = searchParams.get("error");
+  const accountDeleted = searchParams.get("deleted") === "1";
   const [linkDismissed, setLinkDismissed] = useState(false);
   const [submitError, setFormError] = useState<string | null>(null);
   const formError = submitError ?? (linkDismissed ? null : linkError);
@@ -63,6 +64,9 @@ export function LoginForm() {
 
   return (
     <form onSubmit={onSubmit} noValidate className="flex flex-col gap-5">
+      {accountDeleted && !formError ? (
+        <Alert variant="success">{t("login.accountDeleted")}</Alert>
+      ) : null}
       {formError ? <Alert variant="error">{messages.error(formError)}</Alert> : null}
 
       <Field id="email" label={t("fields.email")} error={emailError}>

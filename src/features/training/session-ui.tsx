@@ -21,6 +21,7 @@ import { Button } from "@/components/ui/button";
 import { UnitInput } from "@/components/ui/unit-input";
 import type { ActionResult } from "@/lib/action-result";
 import { cn } from "@/lib/utils";
+import { restAlarmEnabled, scheduleRestAlarm } from "@/features/notifications/push-client";
 import { type SetFormValues, setSchema } from "./schemas";
 
 const clock = (totalSeconds: number) => {
@@ -181,6 +182,24 @@ export function RestTimerProvider({
     return () => clearInterval(timer);
   }, [state]);
 
+  // Notification de fin de repos (écran verrouillé), si activée sur cet appareil.
+  const alarmPending = useRef(false);
+  const syncAlarm = useCallback(
+    (next: TimerState | null) => {
+      if (next?.kind === "rest") {
+        if (!restAlarmEnabled()) return;
+        const seconds = Math.round((next.endsAt - Date.now()) / 1000);
+        if (seconds < 1) return;
+        alarmPending.current = true;
+        scheduleRestAlarm({ seconds, detail: next.next, sessionId });
+      } else if (alarmPending.current) {
+        alarmPending.current = false;
+        scheduleRestAlarm(null);
+      }
+    },
+    [sessionId],
+  );
+
   const save = useCallback(
     (next: TimerState | null) => {
       setState(next);
@@ -188,8 +207,9 @@ export function RestTimerProvider({
       lastCue.current = null;
       finishedRef.current = false;
       storage.set(key, next && next.kind === "rest" ? JSON.stringify(next) : null);
+      syncAlarm(next);
     },
-    [key],
+    [key, syncAlarm],
   );
 
   const start = useCallback(
@@ -237,6 +257,8 @@ export function RestTimerProvider({
     }
     if (remaining <= 0 && !finishedRef.current) {
       finishedRef.current = true;
+      // L'alarme du serveur part d'elle-même : plus rien à annuler.
+      alarmPending.current = false;
       if (sound) {
         beep(880, 0.35, 0.35);
         setTimeout(() => beep(880, 0.35, 0.35), 450);

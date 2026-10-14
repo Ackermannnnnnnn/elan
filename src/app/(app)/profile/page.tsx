@@ -1,3 +1,4 @@
+import { Bell, Download, Trash2 } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getFormatter, getTranslations } from "next-intl/server";
@@ -155,6 +156,41 @@ export default async function ProfilePage() {
               system: t("appearance.system"),
             }}
           />
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>{t("notifications.title")}</CardTitle>
+            <CardDescription>{t("notifications.description")}</CardDescription>
+          </CardHeader>
+          <Button asChild variant="secondary">
+            <Link href={ROUTES.notifications}>
+              <Bell aria-hidden="true" />
+              {t("notifications.open")}
+            </Link>
+          </Button>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>{t("data.title")}</CardTitle>
+            <CardDescription>{t("data.description")}</CardDescription>
+          </CardHeader>
+          <div className="flex flex-wrap gap-3">
+            <Button asChild variant="secondary">
+              {/* Téléchargement d'un fichier : lien classique, pas de navigation. */}
+              <a href={ROUTES.dataExport} download>
+                <Download aria-hidden="true" />
+                {t("data.export")}
+              </a>
+            </Button>
+            <Button asChild variant="destructive">
+              <Link href={ROUTES.deleteAccount}>
+                <Trash2 aria-hidden="true" />
+                {t("data.delete")}
+              </Link>
+            </Button>
+          </div>
         </Card>
 
         <Card>

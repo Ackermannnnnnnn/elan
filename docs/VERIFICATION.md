@@ -98,6 +98,35 @@ appliquées : la RLS, les déclencheurs et les contraintes sont donc réels. La
 doublure n'est pas livrée avec le projet. La phase 2 a par ailleurs été
 validée sur un vrai projet Supabase (inscription, e-mail, profil, déconnexion).
 
+## Phase 6 : habitudes, rappels, notifications, données (8 parcours × 2)
+
+Vérifié sur ordinateur et sur mobile (390 px), application compilée en production :
+
+- manifeste, icônes, service worker et page hors connexion servis sans session ;
+  `/api/push` refuse un appel sans le secret ; l'export exige une session ;
+- carte Habitudes de l'accueil : valeurs calculées depuis l'eau ajoutée, série
+  « 4 jours d'affilée » ;
+- page Habitudes : activer le sommeil, régler son objectif, noter sa nuit ;
+- rappels : heure, jours, refus d'un rappel actif sans jour ; calcul en base du
+  rappel de pesée (heure de Bruxelles, une seule fois par jour) ;
+- fin de repos : alarme enregistrée à la validation d'une série (bonne échéance,
+  exercice suivant, lien vers la séance), annulée par « Passer », rien
+  d'envoyé si les notifications ne sont pas activées sur l'appareil ;
+- export : fichier JSON complet, sans les données d'un autre compte ni les clés
+  de chiffrement des notifications ;
+- suppression : mauvais mot de passe et mot de confirmation refusés, puis
+  compte et données effacés, retour à la connexion avec un message.
+
+`private.push_tick()` a été exécutée sur PostgreSQL 16 avec un coffre et un
+`pg_net` simulés : un seul appel, vers `/api/push`, avec le secret. La route
+`/api/push` est couverte par des tests unitaires (secret, adresses refusées,
+comptage des envois).
+
+**Non vérifiable ici** : la réception réelle d'une notification sur un
+téléphone (le navigateur de test n'a pas accès aux services de Google ou
+d'Apple) et les tâches `pg_cron` sur Supabase. À tester avec « Envoyer un
+essai » après la mise en service (docs/NOTIFICATIONS.md).
+
 ## Caméra du scan (correctif du 14 octobre)
 
 Défaut signalé par Moh : la caméra s'allumait et s'éteignait en boucle. Cause :

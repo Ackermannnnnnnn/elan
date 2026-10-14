@@ -1,8 +1,11 @@
+import { CalendarCheck } from "lucide-react";
 import type { Metadata } from "next";
+import Link from "next/link";
 import { getFormatter, getTranslations } from "next-intl/server";
 import { PageHeader } from "@/components/layout/page-header";
 import { Alert } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Meter } from "@/components/ui/meter";
 import { SegmentedLinks } from "@/components/ui/segmented-links";
@@ -97,7 +100,18 @@ export default async function ProgressPage({ searchParams }: PageProps<"/progres
 
   return (
     <>
-      <PageHeader title={t("title")} lead={t("lead")} />
+      <PageHeader
+        title={t("title")}
+        lead={t("lead")}
+        action={
+          <Button asChild variant="secondary">
+            <Link href={ROUTES.habits}>
+              <CalendarCheck aria-hidden="true" />
+              {t("habitsLink")}
+            </Link>
+          </Button>
+        }
+      />
 
       <div className="flex flex-col gap-5">
         {latest && progress ? (

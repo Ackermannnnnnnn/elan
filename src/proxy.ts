@@ -8,7 +8,8 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // Tout sauf les fichiers statiques, les images et les métadonnées.
-    "/((?!_next/static|_next/image|\\.well-known|favicon.ico|manifest.webmanifest|robots.txt|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|woff2|wasm)$).*)",
+    // Tout sauf les fichiers statiques, les images, les métadonnées, le service
+    // worker et /api/push (appelée par Supabase avec son propre secret, sans session).
+    "/((?!_next/static|_next/image|\\.well-known|favicon.ico|manifest.webmanifest|robots.txt|sw\\.js|offline\\.html|api/push|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|woff2|wasm)$).*)",
   ],
 };

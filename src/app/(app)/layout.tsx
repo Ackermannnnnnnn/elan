@@ -8,6 +8,7 @@ import { PageSkeleton } from "@/components/layout/page-header";
 import { UserChip, UserChipSkeleton } from "@/components/layout/user-chip";
 import { ROUTES } from "@/config/routes";
 import { getOwnProfile } from "@/data/profile";
+import { ServiceWorkerRegistrar } from "@/features/notifications/service-worker";
 import { requireUser } from "@/lib/auth/session";
 
 /**
@@ -66,6 +67,7 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
       </div>
 
       <BottomNav />
+      <ServiceWorkerRegistrar />
     </div>
   );
 }

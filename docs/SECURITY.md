@@ -40,16 +40,18 @@ et ce qui reste à faire avant d'ouvrir l'application à de vrais utilisateurs.
 
 ## Données envoyées à des services externes
 
-| Service                                      | Données                                                           | Quand                              |
-| -------------------------------------------- | ----------------------------------------------------------------- | ---------------------------------- |
-| Supabase (région UE à choisir à la création) | Toutes les données du compte                                      | En permanence                      |
-| Fournisseur IA                               | **Rien** : aucune IA n'est activée                                | —                                  |
-| Open Food Facts                              | Le code-barres scanné, depuis le serveur, sans identité ni cookie | Scan d'un produit pas encore connu |
+| Service                                                        | Données                                                                                                                       | Quand                              |
+| -------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | ---------------------------------- |
+| Supabase (région UE à choisir à la création)                   | Toutes les données du compte                                                                                                  | En permanence                      |
+| Fournisseur IA                                                 | **Rien** : aucune IA n'est activée                                                                                            | —                                  |
+| Open Food Facts                                                | Le code-barres scanné, depuis le serveur, sans identité ni cookie                                                             | Scan d'un produit pas encore connu |
+| Service de notification du navigateur (Google, Apple, Mozilla) | Titre et texte de la notification (« Repos terminé », « Pesée »…), chiffrés de bout en bout ; aucune donnée de santé chiffrée | Rappel ou fin de repos, si activés |
 
 ## À faire avant une ouverture au public
 
-- [ ] Export des données et suppression du compte depuis le profil (phase 6).
-      La suppression en cascade est déjà en place en base.
+- [x] Export des données (Profil → Mes données, fichier JSON) et suppression
+      du compte (mot de passe redemandé, fonction `delete_my_account`, cascade
+      vérifiée par les tests).
 - [ ] Purge automatique des photos expirées (phase 6).
 - [ ] Politique de confidentialité et mentions légales : responsable de
       traitement, base légale, durées de conservation, sous-traitants. À faire

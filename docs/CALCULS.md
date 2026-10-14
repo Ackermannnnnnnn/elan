@@ -259,6 +259,23 @@ débutant), « sans machine », « sans matériel ». Séries et repos sont cons
 
 Repère indicatif : 33 ml par kg (règle pratique courante de 30 à 35 ml/kg), arrondi à 100 ml, borné entre 1,5 et 3,5 L. Pour comparaison, l'EFSA retient 2,0 L par jour pour une femme et 2,5 L pour un homme, toutes sources d'eau comprises.
 
+## Habitudes (`habits.ts`)
+
+- Une habitude quotidienne est **faite** un jour si la valeur du jour atteint
+  l'objectif : repas notés = nombre de créneaux (petit-déjeuner, déjeuner…) avec
+  au moins un aliment ; hydratation = total d'eau ; marche = pas (la plus haute
+  des sources) ; sommeil = heures notées.
+- Objectifs par défaut : repas par jour du profil (sinon 3), objectif d'eau du
+  profil (sinon 2 L), objectif de pas du profil (sinon 8 000), 7 h de sommeil,
+  séances par semaine du profil (sinon 3). Modifiables.
+- **Série en cours** : jours consécutifs faits. Aujourd'hui ne casse pas la
+  série tant que la journée n'est pas finie (on compte jusqu'à hier).
+- **Séances** : comptées par semaine ISO (lundi → dimanche) ; la semaine en
+  cours ne casse pas la série tant qu'elle n'est pas terminée.
+- **Message** : une série d'au moins 2 jours est saluée ; sinon « n jours sur
+  les 7 derniers » ; à défaut « On reprend quand tu veux ». Jamais de rouge ni
+  de reproche. Historique lu : 12 semaines.
+
 ## Sources
 
 - Mifflin MD, St Jeor ST et al. _A new predictive equation for resting energy

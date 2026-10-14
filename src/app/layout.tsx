@@ -15,6 +15,9 @@ export const metadata: Metadata = {
   // Application privée : rien à indexer.
   robots: { index: false, follow: false },
   formatDetection: { telephone: false },
+  // Application installable : plein écran sur iPhone, icône dédiée.
+  appleWebApp: { capable: true, title: APP_NAME, statusBarStyle: "default" },
+  icons: { apple: "/icons/apple-touch-icon.png" },
 };
 
 export const viewport: Viewport = {

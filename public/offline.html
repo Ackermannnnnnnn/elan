@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Hors connexion · Élan</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg: #f4f5f8;
+        --fg: #14161c;
+        --muted: #5b6070;
+        --accent: #2336d9;
+        --on-accent: #ffffff;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #0d0f14;
+          --fg: #eef0f5;
+          --muted: #a3a8b8;
+          --accent: #8493ff;
+          --on-accent: #0a0e2c;
+        }
+      }
+      body {
+        margin: 0;
+        min-height: 100dvh;
+        display: grid;
+        place-items: center;
+        background: var(--bg);
+        color: var(--fg);
+        font:
+          16px/1.5 system-ui,
+          sans-serif;
+        padding: 16px;
+        text-align: center;
+      }
+      h1 {
+        font-size: 1.5rem;
+        margin: 0 0 0.5rem;
+      }
+      p {
+        color: var(--muted);
+        margin: 0 0 1.5rem;
+        max-width: 32ch;
+      }
+      button {
+        font: inherit;
+        font-weight: 600;
+        border: 0;
+        border-radius: 12px;
+        padding: 0.75rem 1.25rem;
+        background: var(--accent);
+        color: var(--on-accent);
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Pas de connexion</h1>
+      <p>
+        Élan a besoin d’internet pour enregistrer tes données. Rien n’est perdu&#8239;: réessaie dès
+        que le réseau revient.
+      </p>
+      <button type="button" onclick="location.reload()">Réessayer</button>
+    </main>
+  </body>
+</html>

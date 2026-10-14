@@ -23,31 +23,34 @@ protégées par la Row Level Security.
 
 ## Migrations
 
-| Fichier                                  | Contenu                                                                                                                                                                     |
-| ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `…120000_foundations`                    | Extensions (`pg_trgm`, `unaccent`), schéma `private`, procédures utilitaires                                                                                                |
-| `…120100_profiles`                       | `profiles`, `user_preferences`                                                                                                                                              |
-| `…120200_goals_and_tracking`             | Objectifs, cibles nutritionnelles, poids, mensurations, photos de progression, activité, eau, habitudes, rappels, badges, bilans                                            |
-| `…120300_nutrition`                      | Aliments, catégories de repas, photos de repas, recettes, repas enregistrés, journal, plans, listes de courses                                                              |
-| `…120400_training`                       | Exercices, programmes, séances types, séances réalisées, séries                                                                                                             |
-| `…120500_ai`                             | Conversations, messages, journal d'usage                                                                                                                                    |
-| `…120600_storage`                        | Buckets privés `meal-photos` et `progress-photos`                                                                                                                           |
-| `…120700_new_user_bootstrap`             | Déclencheur d'initialisation d'un nouveau compte                                                                                                                            |
-| `…090000_foods_search_trigger_definer`   | Le déclencheur de recherche des aliments ne dépend plus des droits sur le schéma `extensions`                                                                               |
-| `…140000_food_catalogue`                 | Copies privées Open Food Facts, rayon et régime des aliments, fonction `search_foods`, créneaux de repas des recettes, recettes de départ, portions au quart dans les plans |
-| `…140100_ciqual_2025`                    | Catalogue partagé : 3 285 aliments CIQUAL (fichier généré, voir le README)                                                                                                  |
-| `…160000_training_programs`              | Exercices chronométrés, niveau et durée des programmes, thème des séances, une seule séance en cours par utilisateur, objectif d'entraînement                               |
-| `…160100_exercise_library`               | Bibliothèque partagée : 68 exercices (fichier généré depuis `src/domain/exercise-catalog.ts`)                                                                               |
-| `…090000_food_packages` (14/10)          | Taille et libellé de l'emballage d'un aliment (canette, paquet)                                                                                                             |
-| `…090100_exercise_library_more` (14/10)  | Bibliothèque portée à 121 exercices (fichier généré)                                                                                                                        |
-| `…090200_start_session_function` (14/10) | Fonction `start_session` : démarre une séance (séance, plan, séries) en une transaction, droits de l'utilisateur (RLS)                                                      |
-| `…200000_session_plan` (13/10)           | Plan propre à chaque séance (`session_exercises` : ordre, objectifs, superset, exercice remplacé, note) repris des séances existantes ; supersets des séances types         |
-| `…090000_flexible_schedule` (13/10)      | Planning souple : `workout_sessions.original_date` (occurrence déplacée, sautée ou faite un autre jour), une seule modification par occurrence, séance sautée à sa date     |
+| Fichier                                  | Contenu                                                                                                                                                                                                         |
+| ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `…120000_foundations`                    | Extensions (`pg_trgm`, `unaccent`), schéma `private`, procédures utilitaires                                                                                                                                    |
+| `…120100_profiles`                       | `profiles`, `user_preferences`                                                                                                                                                                                  |
+| `…120200_goals_and_tracking`             | Objectifs, cibles nutritionnelles, poids, mensurations, photos de progression, activité, eau, habitudes, rappels, badges, bilans                                                                                |
+| `…120300_nutrition`                      | Aliments, catégories de repas, photos de repas, recettes, repas enregistrés, journal, plans, listes de courses                                                                                                  |
+| `…120400_training`                       | Exercices, programmes, séances types, séances réalisées, séries                                                                                                                                                 |
+| `…120500_ai`                             | Conversations, messages, journal d'usage                                                                                                                                                                        |
+| `…120600_storage`                        | Buckets privés `meal-photos` et `progress-photos`                                                                                                                                                               |
+| `…120700_new_user_bootstrap`             | Déclencheur d'initialisation d'un nouveau compte                                                                                                                                                                |
+| `…090000_foods_search_trigger_definer`   | Le déclencheur de recherche des aliments ne dépend plus des droits sur le schéma `extensions`                                                                                                                   |
+| `…140000_food_catalogue`                 | Copies privées Open Food Facts, rayon et régime des aliments, fonction `search_foods`, créneaux de repas des recettes, recettes de départ, portions au quart dans les plans                                     |
+| `…140100_ciqual_2025`                    | Catalogue partagé : 3 285 aliments CIQUAL (fichier généré, voir le README)                                                                                                                                      |
+| `…160000_training_programs`              | Exercices chronométrés, niveau et durée des programmes, thème des séances, une seule séance en cours par utilisateur, objectif d'entraînement                                                                   |
+| `…160100_exercise_library`               | Bibliothèque partagée : 68 exercices (fichier généré depuis `src/domain/exercise-catalog.ts`)                                                                                                                   |
+| `…090000_food_packages` (14/10)          | Taille et libellé de l'emballage d'un aliment (canette, paquet)                                                                                                                                                 |
+| `…090100_exercise_library_more` (14/10)  | Bibliothèque portée à 121 exercices (fichier généré)                                                                                                                                                            |
+| `…090200_start_session_function` (14/10) | Fonction `start_session` : démarre une séance (séance, plan, séries) en une transaction, droits de l'utilisateur (RLS)                                                                                          |
+| `…200000_session_plan` (13/10)           | Plan propre à chaque séance (`session_exercises` : ordre, objectifs, superset, exercice remplacé, note) repris des séances existantes ; supersets des séances types                                             |
+| `…120000_notifications` (14/10)          | Abonnements (`push_subscriptions`), alarme de fin de repos (`push_alarms`), rappels traités (`reminders.last_sent_on`), fonctions `private.due_*` et `push_tick`, tâches `pg_cron` (voir docs/NOTIFICATIONS.md) |
+| `…120100_delete_account` (14/10)         | Fonction `delete_my_account()` : supprime le compte connecté et toutes ses données (cascade)                                                                                                                    |
+| `…090000_flexible_schedule` (13/10)      | Planning souple : `workout_sessions.original_date` (occurrence déplacée, sautée ou faite un autre jour), une seule modification par occurrence, séance sautée à sa date                                         |
 
 ## Tables par domaine
 
 **Compte** — `profiles` (1 par compte), `user_preferences` (1 par compte :
-alimentation, sport, réglages), `reminders`, `user_achievements`.
+alimentation, sport, réglages), `reminders`, `push_subscriptions` (un par
+appareil), `push_alarms`, `user_achievements`.
 
 **Objectifs et suivi** — `user_goals` (un seul objectif principal actif, les
 anciens restent en historique), `nutrition_targets` (cibles datées, avec la
@@ -90,7 +93,10 @@ jour), `body_measurements`, `progress_photos`, `activity_entries`,
   pas en effaçant son historique. Ce journal ne contient ni question ni réponse.
 - **Photos.** `meal_photos.expires_at` et
   `user_preferences.meal_photo_retention_days` portent la durée de conservation.
-  La tâche de purge est prévue en phase 6.
+  Aucune photo n'est stockée tant que l'analyse de repas (payante) reste désactivée.
+- **Habitudes.** `habits` ne contient que les réglages (suivie ou non, objectif
+  s'il diffère de celui du profil) ; les valeurs viennent des tables existantes
+  (journal, eau, pas, séances). Seul le sommeil est saisi dans `habit_entries`.
 
 ## Types TypeScript
 

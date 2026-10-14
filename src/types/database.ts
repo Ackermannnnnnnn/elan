@@ -852,6 +852,66 @@ export type Database = {
         };
         Relationships: [];
       };
+      push_alarms: {
+        Row: {
+          id: string;
+          user_id: string;
+          kind: string;
+          fire_at: string;
+          detail: string | null;
+          url: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id?: string;
+          kind: string;
+          fire_at: string;
+          detail?: string | null;
+          url?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          kind?: string;
+          fire_at?: string;
+          detail?: string | null;
+          url?: string | null;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      push_subscriptions: {
+        Row: {
+          id: string;
+          user_id: string;
+          endpoint: string;
+          p256dh: string;
+          auth: string;
+          last_seen_at: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id?: string;
+          endpoint: string;
+          p256dh: string;
+          auth: string;
+          last_seen_at?: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          endpoint?: string;
+          p256dh?: string;
+          auth?: string;
+          last_seen_at?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
       recipe_ingredients: {
         Row: {
           id: string;
@@ -976,6 +1036,7 @@ export type Database = {
           weekdays: number[];
           created_at: string;
           updated_at: string;
+          last_sent_on: string | null;
         };
         Insert: {
           id?: string;
@@ -986,6 +1047,7 @@ export type Database = {
           weekdays?: number[];
           created_at?: string;
           updated_at?: string;
+          last_sent_on?: string | null;
         };
         Update: {
           id?: string;
@@ -996,6 +1058,7 @@ export type Database = {
           weekdays?: number[];
           created_at?: string;
           updated_at?: string;
+          last_sent_on?: string | null;
         };
         Relationships: [];
       };
@@ -1644,6 +1707,10 @@ export type Database = {
     };
     Views: { [_ in never]: never };
     Functions: {
+      delete_my_account: {
+        Args: Record<string, never>;
+        Returns: undefined;
+      };
       search_foods: {
         Args: { search: string; max_results?: number };
         Returns: Database["public"]["Tables"]["foods"]["Row"][];

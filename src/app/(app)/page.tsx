@@ -7,6 +7,7 @@ import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Meter } from "@/components/ui/meter";
 import { ROUTES } from "@/config/routes";
 import { listDiary, listDiaryTotals } from "@/data/nutrition";
+import { getHabitsOverview } from "@/data/habits";
 import { getActiveGoal, getOwnPreferences, getTargetsOn } from "@/data/plan";
 import { getOwnProfile, getToday } from "@/data/profile";
 import { getSteps, listWater, listWeights } from "@/data/tracking";
@@ -14,6 +15,7 @@ import { shouldRecalculate } from "@/domain/energy";
 import { progressTowards, sumMacros } from "@/domain/nutrition";
 import { bmi, bmiCategory } from "@/domain/energy";
 import { movingAverage } from "@/domain/weight-trend";
+import { HabitsCard } from "@/features/habits/habits-card";
 import { IntakeChart } from "@/features/nutrition/intake-chart";
 import { RecalculateNotice } from "@/features/targets/recalculate-notice";
 import { StepsCard } from "@/features/tracking/steps-card";
@@ -38,6 +40,7 @@ export default async function HomePage() {
     weights,
     water,
     steps,
+    habits,
     t,
     format,
   ] = await Promise.all([
@@ -50,6 +53,7 @@ export default async function HomePage() {
     listWeights(addDays(today, -(WEIGHT_DAYS + 6))),
     listWater(today),
     getSteps(today),
+    getHabitsOverview(today),
     getTranslations("Home"),
     getFormatter(),
   ]);
@@ -195,6 +199,8 @@ export default async function HomePage() {
             </p>
           </div>
         </Card>
+
+        <HabitsCard habits={habits} today={today} />
 
         <Card>
           <div className="mb-4 flex flex-wrap items-baseline justify-between gap-3">
